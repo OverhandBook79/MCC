@@ -3,6 +3,7 @@ import React from 'react'
 import { Link } from 'react-router-dom'
 
 const HomePage = () => {
+  
   return ( <>
     <Flex>Selamat datang diberanda</Flex>
     <Link to={"/auth"}>babay</Link>
