@@ -6,7 +6,7 @@ const HomePage = () => {
   
   return ( <>
     <Flex>Selamat datang diberanda</Flex>
-    <Link to={'/auth'}>babay</Link>
+    <Link to={'/profile'}>babay</Link>
     <Button>Test</Button>
   </>
   )
