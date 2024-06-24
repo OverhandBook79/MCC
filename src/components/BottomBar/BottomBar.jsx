@@ -1,23 +1,22 @@
-import React from 'react'
-import { Button, useColorMode } from '@chakra-ui/react';
+import React from 'react';
+import { Box, Flex, Link, useColorMode } from '@chakra-ui/react';
 import { FaGithub, FaYoutube, FaMoon, FaSun  } from "react-icons/fa";
 
 const BottomBar = () => {
-    const { colorMode, toggleColorMode } = useColorMode();
-
-    return (
-        <>
-         <Button>
-            <FaGithub/>
-         </Button>
-         <Button>
-            <FaYoutube/>
-         </Button>
-      <Button onClick={toggleColorMode}>
+  const { colorMode, toggleColorMode } = useColorMode();
+  return (
+    <Flex justifyContent="center" p={4} borderTop="1px" borderColor="gray.200" mt={4}>
+      <Link href="https://github.com/OverhandBook79" isExternal>
+        <FaGithub/>
+      </Link>
+      <Link href="https://youtube.com" isExternal>
+        <FaYoutube/>
+      </Link>
+      <Box onClick={toggleColorMode}>
       {colorMode === 'light' ? <FaMoon/> : <FaSun/>}
-      </Button>
-        </>
-    );
-  };
+      </Box>
+    </Flex>
+  );
+};
 
-export default BottomBar
+export default BottomBar;
