@@ -1,23 +1,32 @@
 import React, { useState, useEffect } from 'react';
 import { Routes, Route } from 'react-router-dom';
-import { Box, Modal, ModalOverlay, ModalContent, ModalHeader, ModalFooter, ModalBody, ModalCloseButton, Input, Button, useDisclosure } from '@chakra-ui/react';
-import ProfilePage from './pages/ProfilePage/ProfilePage';
+import { Box } from '@chakra-ui/react';
 import HomePage from './pages/HomePage/HomePage';
+import ProfilePage from './pages/ProfilePage/ProfilePage';
 import TopBar from './components/TopBar/TopBar';
 import BottomBar from './components/BottomBar/BottomBar';
-
+import AuthModal from './components/ProfileModal/AuthModal';
+import AvatarModal from './components/ProfileModal/AvatarModal';
+import ProfileEditModal from './components/ProfileModal/ProfileEditModal';
+import { useDisclosure } from '@chakra-ui/react'; // Import useDisclosure from Chakra UI
 
 const App = () => {
   const [user, setUser] = useState(null);
   const [isSignUp, setIsSignUp] = useState(false);
-  const [formData, setFormData] = useState({ username: '', email: '', password: '', avatar: '' });
-  const { isOpen, onOpen, onClose } = useDisclosure();
+  const [formData, setFormData] = useState({ username: '', email: '', password: '', avatar: '', bio: '' });
+  const [tempAvatar, setTempAvatar] = useState('');
+  const [tempBio, setTempBio] = useState('');
+  const [tempUsername, setTempUsername] = useState('');
+
+  // Use useDisclosure hook to manage modal states
+  const { isOpen: isAuthModalOpen, onOpen: onAuthModalOpen, onClose: onAuthModalClose } = useDisclosure();
   const { isOpen: isAvatarModalOpen, onOpen: onAvatarModalOpen, onClose: onAvatarModalClose } = useDisclosure();
+  const { isOpen: isBioModalOpen, onOpen: onBioModalOpen, onClose: onBioModalClose } = useDisclosure();
 
   useEffect(() => {
-    const storedUser = localStorage.getItem('user');
+    const storedUser = JSON.parse(localStorage.getItem('user'));
     if (storedUser) {
-      setUser(JSON.parse(storedUser));
+      setUser(storedUser);
     }
   }, []);
 
@@ -39,7 +48,7 @@ const App = () => {
       }
     }
     setUser(formData);
-    onClose();
+    onAuthModalClose(); // Close the authentication modal after login/signup
   };
 
   const handleLogout = () => {
@@ -51,83 +60,58 @@ const App = () => {
     setIsSignUp(prev => !prev);
   };
 
-  const handleAvatarChange = (url) => {
-    const updatedUser = { ...user, avatar: url };
+  const handleAvatarChange = () => {
+    const updatedUser = { ...user, avatar: tempAvatar };
     setUser(updatedUser);
     localStorage.setItem('user', JSON.stringify(updatedUser));
-    onAvatarModalClose();
+    onAvatarModalClose(); // Close the avatar modal after avatar change
+  };
+
+  const handleBioAndUsernameChange = () => {
+    const updatedUser = { ...user, bio: tempBio, username: tempUsername };
+    setUser(updatedUser);
+    localStorage.setItem('user', JSON.stringify(updatedUser));
+    onBioModalClose(); // Close the profile edit modal after bio/username change
   };
 
   return (
     <Box>
-      <TopBar user={user} onLogin={onOpen} onLogout={handleLogout} />
+      <TopBar user={user} onLogin={onAuthModalOpen} onLogout={handleLogout} />
 
       <Routes>
         <Route path="/" element={<HomePage />} />
-        <Route path="/profile" element={<ProfilePage user={user} onAvatarModalOpen={onAvatarModalOpen} />} />
+        <Route path="/profile" element={<ProfilePage user={user} onAvatarModalOpen={onAvatarModalOpen} onBioModalOpen={onBioModalOpen} />} />
       </Routes>
 
       <BottomBar />
 
-      <Modal isOpen={isOpen} onClose={onClose}>
-        <ModalOverlay />
-        <ModalContent>
-          <ModalHeader>{isSignUp ? 'Sign Up' : 'Login'}</ModalHeader>
-          <ModalCloseButton />
-          <ModalBody>
-            <Input 
-                name="username" 
-                placeholder="Username" 
-                mb={3} 
-                value={formData.username} 
-                onChange={handleInputChange} 
-            />
-            <Input 
-              name="password" 
-              placeholder="Password" 
-              type="password" 
-              mb={3} 
-              value={formData.password} 
-              onChange={handleInputChange} 
-            />
-            {isSignUp && (
-              <Input 
-              name="email" 
-              placeholder="Email" 
-              mb={3} 
-              value={formData.email} 
-              onChange={handleInputChange} 
-              />
-              
-            )}
-          </ModalBody>
-          <ModalFooter>
-            <Button colorScheme="blue" mr={3} onClick={handleAuth}>
-              {isSignUp ? 'Sign Up' : 'Login'}
-            </Button>
-            <Button variant="link" onClick={switchAuthMode}>
-              {isSignUp ? 'Login' : 'Sign Up'}
-            </Button>
-          </ModalFooter>
-        </ModalContent>
-      </Modal>
+      <AuthModal 
+        isOpen={isAuthModalOpen} 
+        onClose={onAuthModalClose} 
+        isSignUp={isSignUp} 
+        formData={formData} 
+        handleInputChange={handleInputChange} 
+        handleAuth={handleAuth} 
+        switchAuthMode={switchAuthMode} 
+      />
 
-      <Modal isOpen={isAvatarModalOpen} onClose={onAvatarModalClose}>
-        <ModalOverlay />
-        <ModalContent>
-          <ModalHeader>Change Avatar</ModalHeader>
-          <ModalCloseButton />
-          <ModalBody>
-            <Input 
-              placeholder="New Avatar URL" 
-              onChange={(e) => handleAvatarChange(e.target.value)} 
-            />
-          </ModalBody>
-          <ModalFooter>
-            <Button colorScheme="blue" onClick={() => handleAvatarChange(formData.avatar)}>Save</Button>
-          </ModalFooter>
-        </ModalContent>
-      </Modal>
+      <AvatarModal 
+        isOpen={isAvatarModalOpen} 
+        onClose={onAvatarModalClose} 
+        tempAvatar={tempAvatar} 
+        setTempAvatar={setTempAvatar} 
+        handleAvatarChange={handleAvatarChange} 
+      />
+
+      <ProfileEditModal 
+        isOpen={isBioModalOpen} 
+        onClose={onBioModalClose} 
+        tempBio={tempBio} 
+        setTempBio={setTempBio} 
+        tempUsername={tempUsername} 
+        setTempUsername={setTempUsername} 
+        handleBioAndUsernameChange={handleBioAndUsernameChange} 
+      />
     </Box>
   );
 };
