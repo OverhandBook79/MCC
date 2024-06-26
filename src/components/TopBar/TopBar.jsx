@@ -7,13 +7,11 @@ import { CiLogout } from "react-icons/ci";
 
 const TopBar = ({ user, onLogin, onLogout }) => {
   const { isOpen, onOpen, onClose } = useDisclosure();
-  const isMobile = useBreakpointValue({ base: true, md: false });
 
   return (
     <Flex justifyContent="space-between" p={4} borderBottom="1px" borderColor="gray.200" gap={2}>
       <Text fontSize="2xl" fontWeight="bold">MCDL</Text>
       <Input placeholder="Search" width="full" />
-      {isMobile ? (
         <>
           <Button onClick={onOpen}><RxHamburgerMenu /></Button>
           <Drawer isOpen={isOpen} placement="right" onClose={onClose}>
@@ -36,27 +34,12 @@ const TopBar = ({ user, onLogin, onLogout }) => {
                   ) : (
                     <Button w="100%" onClick={onLogin}>Login</Button>
                   )}
+                  
                 </VStack>
               </DrawerBody>
             </DrawerContent>
           </Drawer>
         </>
-      ) : (
-        <Flex alignItems="center">
-          {user ? (
-            <>
-              <RouterLink to="/profile">
-                <Flex alignItems="center">
-                  <Avatar name={user.username} src={user.avatar} size="sm" cursor="pointer" />
-                </Flex>
-              </RouterLink>
-              <Button ml={4} onClick={onLogout}><CiLogout /></Button>
-            </>
-          ) : (
-            <Button onClick={onLogin}>Login</Button>
-          )}
-        </Flex>
-      )}
     </Flex>
   );
 };
