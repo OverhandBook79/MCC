@@ -4,8 +4,21 @@ import { TbWorld } from "react-icons/tb";
 import { AiOutlineSkin } from "react-icons/ai";
 import { BiWorld } from "react-icons/bi";
 import { IoExtensionPuzzleOutline } from "react-icons/io5";
+import React, { useEffect, useState } from "react";
 
 const HomePage = () => {
+  const [contents, setContents] = useState([]);
+
+  useEffect(() => {
+    const data = JSON.parse(localStorage.getItem('contents')) || [];
+    setContents(data);
+  }, []);
+
+  const addons = contents.filter(content => content.category === 'Addon');
+  const worlds = contents.filter(content => content.category === 'World');
+  const skins = contents.filter(content => content.category === 'Skin');
+  const servers = contents.filter(content => content.category === 'Server');
+
   return (
     <Container minWidth={'full'} overflowY="auto">
       <Flex direction="column" minWidth={'full'}>
@@ -14,7 +27,7 @@ const HomePage = () => {
           <Text>Addons</Text>
         </Flex>
         <Box overflowX="auto" minWidth={'full'} alignContent={'flex-start'}>
-          <Contents category="Addon" />
+          <Contents contents={addons} />
         </Box>
 
         <Flex alignItems="center" gap={2} mt={4}>
@@ -22,7 +35,7 @@ const HomePage = () => {
           <Text>Worlds</Text>
         </Flex>
         <Box overflowX="auto" w="100%">
-          <Contents category="World" />
+          <Contents contents={worlds} />
         </Box>
 
         <Flex alignItems="center" gap={2} mt={4}>
@@ -30,7 +43,7 @@ const HomePage = () => {
           <Text>Skins</Text>
         </Flex>
         <Box overflowX="auto" w="100%">
-          <Contents category="Skin" />
+          <Contents contents={skins} />
         </Box>
 
         <Flex alignItems="center" gap={2} mt={4}>
@@ -38,7 +51,7 @@ const HomePage = () => {
           <Text>Servers</Text>
         </Flex>
         <Box overflowX="auto" w="100%">
-          <Contents category="Server" />
+          <Contents contents={servers} />
         </Box>
       </Flex>
     </Container>

@@ -1,33 +1,26 @@
-import { Flex, VStack, Text } from "@chakra-ui/react";
+import { Flex, VStack } from "@chakra-ui/react";
 import Content from "./Content";
-import React, { useEffect, useState } from "react";
+import React from "react";
 
-const Contents = ({ category }) => {
-  const [contents, setContents] = useState([]);
-
-  useEffect(() => {
-    const data = JSON.parse(localStorage.getItem('contents')) || [];
-    const filteredContents = category ? data.filter(item => item.category === category) : data;
-    setContents(filteredContents.slice(0, 10));
-  }, [category]);
-
+const Contents = ({ contents }) => {
   return (
-    <VStack>
+    <VStack>  
       <Flex gap={4} overflowX="auto">
         {contents.length > 0 ? contents.map(content => (
-          <Content
-            key={content.id}
-            img={content.thumbnail}
-            title={content.title}
-            date={content.date}
-            username={content.username}
+          <Content 
+            key={content.id} 
+            id={content.id} 
+            img={content.thumbnail} 
+            title={content.title} 
+            date={content.date} 
           />
         )) : (
-          <Content
-            img=''
-            title='No content here'
-            date=''
-            username=''
+          <Content 
+            key="no-content" 
+            id="no-content" 
+            img="placeholder_image_url" // Use a placeholder image URL
+            title="No content here" 
+            date="" 
           />
         )}
       </Flex>
