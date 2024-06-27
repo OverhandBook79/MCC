@@ -17,7 +17,7 @@ Jangan Dicoba
 
 {
   "username": "Admin 1",
-  "email": "raghibmod123@gmail.com",
+  "email": "Put your email. your dumb",
   "password": "nazigreng",
   "avatar": "",
   "bio": "This is Admin of Website"
