@@ -1,23 +1,35 @@
-import { Flex,  Text, VStack } from "@chakra-ui/react";
+import { Flex, VStack, Text } from "@chakra-ui/react";
 import Content from "./Content";
+import React, { useEffect, useState } from "react";
 
-const Contents = ({categoryicon, category}) => {
+const Contents = ({ category }) => {
+  const [contents, setContents] = useState([]);
+
+  useEffect(() => {
+    const data = JSON.parse(localStorage.getItem('contents')) || [];
+    const filteredContents = category ? data.filter(item => item.category === category) : data;
+    setContents(filteredContents.slice(0, 10));
+  }, [category]);
+
   return (
     <VStack>
-      <Flex justifyContent={"left"} w={"full"}> 
-        <Flex align={"center"} gap={2} >
-          {categoryicon}
-          {category}
-        </Flex>
-      </Flex>
-      <Flex 
-        gap={4}
-        overflowX="auto"
-      >
-        <Content img='/public/pic1.png' avatar='' title='CC201' date='kemaren' username='Jions 1080HD'/>
-        <Content img='/pic2.png' avatar='' title='CC205' date='hari ini' username='VX Craft'/>
-        <Content img='/pic4.png' avatar='' title='Papan Stasiun' date='3 bulan lalu' username='OverhandBook79'/>
-        <Content img='/pic3.png' avatar='' title='CC206' date='2 tahun lalu' username='RF Craft'/>
+      <Flex gap={4} overflowX="auto">
+        {contents.length > 0 ? contents.map(content => (
+          <Content
+            key={content.id}
+            img={content.thumbnail}
+            title={content.title}
+            date={content.date}
+            username={content.username}
+          />
+        )) : (
+          <Content
+            img=''
+            title='No content here'
+            date=''
+            username=''
+          />
+        )}
       </Flex>
     </VStack>
   );

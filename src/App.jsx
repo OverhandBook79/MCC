@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { Routes, Route } from 'react-router-dom';
-import { Box } from '@chakra-ui/react';
+import { Box, VStack } from '@chakra-ui/react';
+import { useDisclosure } from '@chakra-ui/react'; 
+
 import HomePage from './pages/HomePage/HomePage';
 import ProfilePage from './pages/ProfilePage/ProfilePage';
 import TopBar from './components/TopBar/TopBar';
@@ -8,7 +10,6 @@ import BottomBar from './components/BottomBar/BottomBar';
 import AuthModal from './components/ProfileModal/AuthModal';
 import AvatarModal from './components/ProfileModal/AvatarModal';
 import ProfileEditModal from './components/ProfileModal/ProfileEditModal';
-import { useDisclosure } from '@chakra-ui/react'; 
 import UploadPage from "./pages/UploadPage/UploadPage";
 import WorldsPage from "./pages/WorldPage/WorldsPage";
 import AddonsPage from "./pages/AddonPage/AddonsPage";
@@ -44,6 +45,7 @@ const App = () => {
   const handleAuth = () => {
     if (isSignUp) {
       localStorage.setItem('user', JSON.stringify(formData));
+      setUser(formData);
     } else {
       const storedUser = JSON.parse(localStorage.getItem('user'));
       if (storedUser && storedUser.email === formData.email && storedUser.password === formData.password) {
@@ -53,7 +55,6 @@ const App = () => {
         return;
       }
     }
-    setUser(formData);
     onAuthModalClose(); // Close the authentication modal after login/signup
   };
 
@@ -81,49 +82,54 @@ const App = () => {
   };
 
   return (
-    <Box>
-      <TopBar user={user} onLogin={onAuthModalOpen} onLogout={handleLogout} />
+    <>
+        <Box position="fixed" top={0} left={0} width="100%" zIndex={1000}>
+          <TopBar user={user} onLogin={onAuthModalOpen} onLogout={handleLogout} />
+        </Box>
+        <Box flex="1" mt="80px">
+          <Routes>
+            <Route path="/" element={<HomePage />} />
+            <Route path="/profile" element={<ProfilePage user={user} onAvatarModalOpen={onAvatarModalOpen} onBioModalOpen={onBioModalOpen} />} />
+            <Route path="/addons" element={<AddonsPage />} />
+            <Route path="/worlds" element={<WorldsPage />} />
+            <Route path="/skins" element={<SkinsPage />} />
+            <Route path="/uploadcreation" element={<UploadPage />} />
+            <Route path="/post/:id" element={<PostPage />} />
+            <Route path="/servers" element={<ServersPage />} />
+          </Routes>
+        </Box>
+        <Box position="sticky" bottom={0} zIndex={1}>
+          <BottomBar />
+        </Box>
+        
+        <AuthModal 
+          isOpen={isAuthModalOpen} 
+          onClose={onAuthModalClose} 
+          isSignUp={isSignUp} 
+          formData={formData} 
+          handleInputChange={handleInputChange} 
+          handleAuth={handleAuth} 
+          switchAuthMode={switchAuthMode} 
+        />
 
-      <Routes>
-        <Route path="/" element={<HomePage />} />
-        <Route path="/profile" element={<ProfilePage user={user} onAvatarModalOpen={onAvatarModalOpen} onBioModalOpen={onBioModalOpen} />} />
-        <Route path='/addons' element={<AddonsPage/>} />
-        <Route path='/worlds' element={<WorldsPage/>} />
-        <Route path='/skins' element={<SkinsPage/>} />
-        <Route path='/uploadcreation' element={<UploadPage/>} />
-        <Route path='/post' element={<PostPage/>} /><Route path='/servers' element={<ServersPage/>} />
-      </Routes>
+        <AvatarModal 
+          isOpen={isAvatarModalOpen} 
+          onClose={onAvatarModalClose} 
+          tempAvatar={tempAvatar} 
+          setTempAvatar={setTempAvatar} 
+          handleAvatarChange={handleAvatarChange} 
+        />
 
-      <BottomBar />
-
-      <AuthModal 
-        isOpen={isAuthModalOpen} 
-        onClose={onAuthModalClose} 
-        isSignUp={isSignUp} 
-        formData={formData} 
-        handleInputChange={handleInputChange} 
-        handleAuth={handleAuth} 
-        switchAuthMode={switchAuthMode} 
-      />
-
-      <AvatarModal 
-        isOpen={isAvatarModalOpen} 
-        onClose={onAvatarModalClose} 
-        tempAvatar={tempAvatar} 
-        setTempAvatar={setTempAvatar} 
-        handleAvatarChange={handleAvatarChange} 
-      />
-
-      <ProfileEditModal 
-        isOpen={isBioModalOpen} 
-        onClose={onBioModalClose} 
-        tempBio={tempBio} 
-        setTempBio={setTempBio} 
-        tempUsername={tempUsername} 
-        setTempUsername={setTempUsername} 
-        handleBioAndUsernameChange={handleBioAndUsernameChange} 
-      />
-    </Box>
+        <ProfileEditModal 
+          isOpen={isBioModalOpen} 
+          onClose={onBioModalClose} 
+          tempBio={tempBio} 
+          setTempBio={setTempBio} 
+          tempUsername={tempUsername} 
+          setTempUsername={setTempUsername} 
+          handleBioAndUsernameChange={handleBioAndUsernameChange} 
+        />
+    </>
   );
 };
 

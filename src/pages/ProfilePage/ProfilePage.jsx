@@ -1,6 +1,6 @@
 import React from 'react';
 import { Box, Flex, Avatar, Heading, Text, Button, Badge, IconButton } from '@chakra-ui/react';
-import { useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { EditIcon } from '@chakra-ui/icons';
 import { MdEdit } from "react-icons/md";
 
@@ -44,6 +44,7 @@ const ProfilePage = ({ user, onAvatarModalOpen, onBioModalOpen }) => {
           <Text fontSize="md" mb={4}>{user.email}</Text>
           <Text fontSize="md" mb={4}>{user.bio || 'No bio available'}</Text>
           <Button colorScheme="blue" onClick={() => navigate('/')}>Back to Home</Button>
+          <Link to={'/uploadcreation'}>Make a Post</Link>
         </Flex>
       </Box>
     </Box>
