@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Routes, Route } from 'react-router-dom';
 import { Box, VStack } from '@chakra-ui/react';
 import { useDisclosure } from '@chakra-ui/react'; 
+import { v4 as uuidv4 } from 'uuid';
 
 import HomePage from './pages/HomePage/HomePage';
 import ProfilePage from './pages/ProfilePage/ProfilePage';
@@ -44,8 +45,9 @@ const App = () => {
 
   const handleAuth = () => {
     if (isSignUp) {
-      localStorage.setItem('user', JSON.stringify(formData));
-      setUser(formData);
+      const newUser = { ...formData, userId: uuidv4() };
+      localStorage.setItem('user', JSON.stringify(newUser));
+      setUser(newUser);
     } else {
       const storedUser = JSON.parse(localStorage.getItem('user'));
       if (storedUser && storedUser.email === formData.email && storedUser.password === formData.password) {
