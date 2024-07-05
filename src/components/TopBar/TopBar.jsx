@@ -7,7 +7,6 @@ import TopBarDrawer from './TopBarDrawer';
 
 const TopBar = () => {
   const { isOpen, onOpen, onClose } = useDisclosure();
-  ut();
   const { colorMode } = useColorMode();
   const logoSrc = colorMode === 'light' ? '/logo-light.png' : '/logo-dark.png';
   const bgColor = useColorModeValue("gray.50", "gray.900");
