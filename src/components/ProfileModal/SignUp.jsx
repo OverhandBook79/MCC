@@ -21,6 +21,7 @@ const SignUp = () => {
                 size={"sm"}
                 value={inputs.fullName}
                 onChange={(e) => setInputs({ ...inputs, fullName: e.target.value })}
+                w={'full'}
             />
             <Input
                 placeholder='Username'
@@ -29,6 +30,7 @@ const SignUp = () => {
                 size={"sm"}
                 value={inputs.username}
                 onChange={(e) => setInputs({ ...inputs, username: e.target.value })}
+                w={'full'}
             />
             <Input
                 placeholder='Email'
@@ -37,6 +39,7 @@ const SignUp = () => {
                 size={"sm"}
                 value={inputs.email}
                 onChange={(e) => setInputs({ ...inputs, email: e.target.value })}
+                w={'full'}
             />
             <InputGroup>
                 <Input
@@ -46,25 +49,22 @@ const SignUp = () => {
                     type={showPassword ? "text" : "password"}
                     value={inputs.password}
                     onChange={(e) => setInputs({ ...inputs, password: e.target.value })}
+                    w={'full'}
                 />
                 <InputRightElement h='full'>
-                <Button variant={"ghost"} size={"sm"} onClick={() => setShowPassword(!showPassword)}>
-                  {showPassword ? <ViewIcon /> : <ViewOffIcon />}
-                </Button>
-              </InputRightElement>
+                    <Button variant={"ghost"} size={"sm"} onClick={() => setShowPassword(!showPassword)}>
+                        {showPassword ? <ViewIcon /> : <ViewOffIcon />}
+                    </Button>
+                </InputRightElement>
             </InputGroup>
-            {error && (
-                <Alert status='error' fontSize={13} p={2} borderRadius={4}>
-                    <AlertIcon fontSize={12} />
-                    {error.message}
-                </Alert>
-            )}
             <Button
                 colorScheme="blue"
                 mr={3}
                 isLoading={loading}
-                onClick={() => signup(inputs)}>
-                Sign In
+                onClick={() => signup(inputs)}
+                w={'full'}
+            >
+                Sign Up
             </Button>
         </Stack>
     )

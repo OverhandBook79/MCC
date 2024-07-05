@@ -1,4 +1,4 @@
-import { Tab, TabList, TabPanel, TabPanels, Tabs } from '@chakra-ui/react'
+import { Box, Center, Flex, Tab, TabList, TabPanel, TabPanels, Tabs } from '@chakra-ui/react'
 import React from 'react'
 import SignIn from '../../components/ProfileModal/SignIn'
 import SignUp from '../../components/ProfileModal/SignUp'
@@ -6,20 +6,22 @@ import SignUp from '../../components/ProfileModal/SignUp'
 const AuthPage = () => {
   return (
     <>
-      <Tabs size='md' variant='enclosed'>
-        <TabList>
+      <Flex alignItems={'center'} justifyContent={'center'} w={300}>
+      <Tabs size='md' variant='enclosed' w={300}>
+        <TabList w={300}>
           <Tab>Sign Up</Tab>
           <Tab>Sign In</Tab>
         </TabList>
-        <TabPanels>
-          <TabPanel>
-            <SignUp/>
-          </TabPanel>
-          <TabPanel>
-            <SignIn/>
+        <TabPanels w={300}>
+          <TabPanel w={300}>
+            <SignUp w={300}/>
+          </TabPanel >
+          <TabPanel w={300}>
+            <SignIn w={300}/>
           </TabPanel>
         </TabPanels>
       </Tabs>
+      </Flex>
     </>
   )
 }
