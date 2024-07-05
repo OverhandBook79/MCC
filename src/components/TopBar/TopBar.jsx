@@ -1,8 +1,8 @@
 // src/components/TopBar.jsx
 import React from 'react';
-import { Flex, Button, Avatar, Text, useDisclosure, Drawer, DrawerOverlay, DrawerContent, DrawerHeader, DrawerBody, DrawerCloseButton, VStack, Input, useColorModeValue } from '@chakra-ui/react';
+import { Flex, Button, Avatar, Text, useDisclosure, Drawer, DrawerOverlay, DrawerContent, DrawerHeader, DrawerBody, DrawerCloseButton, VStack, Input, useColorModeValue, Link as ChakraLink, useColorMode, Link, Image } from '@chakra-ui/react';
 import { RxHamburgerMenu } from "react-icons/rx";
-import { Link as RouterLink, useNavigate } from 'react-router-dom';
+import { Link as RouterLink } from 'react-router-dom';
 import { CiLogout } from "react-icons/ci";
 import { BiWorld } from "react-icons/bi";
 import { TbWorld } from "react-icons/tb";
@@ -11,12 +11,16 @@ import { IoExtensionPuzzleOutline } from 'react-icons/io5';
 import { HiOutlineHome } from "react-icons/hi2";
 
 const TopBar = ({ user, onLogin, onLogout }) => {
+  const { colorMode } = useColorMode();
   const { isOpen, onOpen, onClose } = useDisclosure();
+  const logoSrc = colorMode === 'light' ? '/logo-light.png' : '/logo-dark.png';
   const bgColor = useColorModeValue("gray.50", "gray.900");
 
   return (
     <Flex justifyContent="space-between" p={4} borderBottom="1px" borderColor="gray.200" bgColor={bgColor} gap={2}>
-      <Text fontSize="2xl" fontWeight="bold">MCDL</Text>
+      <ChakraLink as={Link} to="/">
+          <Image src={logoSrc} h={10} display={{ base: "none", sm: "block" }} cursor="pointer" />
+      </ChakraLink>
       <Input placeholder="Search" width="full" />
         <>
           <Button onClick={onOpen}><RxHamburgerMenu /></Button>
