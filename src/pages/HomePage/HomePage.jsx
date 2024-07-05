@@ -22,7 +22,7 @@ const HomePage = () => {
   return (
     <Container minWidth={'full'} overflowY="auto">
       <Flex direction="column" minWidth={'full'}>
-        <Flex alignItems="center" gap={2}>
+        <Flex alignItems="center" gap={2} mt={4} minWidth={'full'}>
           <IoExtensionPuzzleOutline />
           <Text>Addons</Text>
         </Flex>

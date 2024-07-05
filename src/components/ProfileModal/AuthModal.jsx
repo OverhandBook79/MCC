@@ -1,6 +1,5 @@
-// src/components/AuthModal.jsx
 import React, { useState } from 'react';
-import { Modal, ModalOverlay, ModalContent, ModalHeader, ModalFooter, ModalBody, ModalCloseButton, Input, Button } from '@chakra-ui/react';
+import { Modal, ModalOverlay, ModalContent, ModalHeader, ModalFooter, ModalBody, ModalCloseButton, Button } from '@chakra-ui/react';
 import SignUp from './SignUp';
 import SignIn from './SignIn';
 
@@ -9,6 +8,7 @@ const AuthModal = ({ isOpen, onClose }) => {
   const switchAuthMode = () => {
     setIsSignUp(prev => !prev);
   };
+
   return (
     <Modal isOpen={isOpen} onClose={onClose}>
       <ModalOverlay />
