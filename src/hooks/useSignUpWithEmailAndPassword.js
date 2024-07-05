@@ -52,7 +52,6 @@ const useSignUpWithEmailAndPassword = () => {
 			showToast("Error", error.message, "error");
 		}
 	};
-
 	return { loading, error, signup };
 };
 

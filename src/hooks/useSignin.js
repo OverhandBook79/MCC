@@ -3,10 +3,9 @@ import useShowToast from "./useShowToast";
 import { auth, firestore } from "../firebase/firebase";
 import { doc, getDoc } from "firebase/firestore";
 import useAuthStore from "../store/authStore";
-
 const useSignin = () => {
 	const showToast = useShowToast();
-	const [signInWithEmailAndPassword, , loading, error] = useSignInWithEmailAndPassword(auth);
+	const [signInWithEmailAndPassword, loading, error] = useSignInWithEmailAndPassword(auth);
 	const loginUser = useAuthStore((state) => state.login);
 
 	const signin = async (inputs) => {
@@ -26,8 +25,8 @@ const useSignin = () => {
 			showToast("Error", error.message, "error");
 		}
 	};
-
 	return { loading, error, signin };
+
 };
 
 export default useSignin;

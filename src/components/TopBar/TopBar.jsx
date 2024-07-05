@@ -10,17 +10,24 @@ import { AiOutlineSkin } from "react-icons/ai";
 import { IoExtensionPuzzleOutline } from 'react-icons/io5';
 import { HiOutlineHome } from "react-icons/hi2";
 import { FaGithub, FaMoon, FaSun, FaYoutube } from 'react-icons/fa';
+import ProfileLink from './ProfileLink';
+import AuthModal from '../ProfileModal/AuthModal';
+import { useAuthState } from 'react-firebase-hooks/auth';
+import { auth } from '../../firebase/firebase';
 
-const TopBar = ({ user, onLogin, onLogout }) => {
+const TopBar = () => {
+  const { isOpen: isAuthModalOpen, onClose: onAuthModalClose } = useDisclosure();
   const { colorMode, toggleColorMode } = useColorMode();
   const { isOpen, onOpen, onClose } = useDisclosure();
   const logoSrc = colorMode === 'light' ? '/logo-light.png' : '/logo-dark.png';
   const bgColor = useColorModeValue("gray.50", "gray.900");
+  const [user] = useAuthState(auth);
+  const renderUser = user;
 
   return (
     <Flex justifyContent="space-between" p={4} borderBottom="1px" borderColor="gray.200" bgColor={bgColor} gap={2}>
       <Flex as={Link} to="/">
-        <Image src={logoSrc} h={10} w={45} cursor="pointer" />
+        <Image src={logoSrc} width={10} height={10} cursor="pointer" />
       </Flex>
       <Input placeholder="Search" width="full" />
       <>
@@ -32,14 +39,9 @@ const TopBar = ({ user, onLogin, onLogout }) => {
             <DrawerHeader>Menu</DrawerHeader>
             <DrawerBody>
               <VStack spacing={4}>
-                {user ? (
+                {renderUser ? (
                   <>
-                    <Button as={Link} to={'/profile'} onClick={onClose} w={"100%"} gap={2}>
-                      <Flex alignItems="center">
-                        <Avatar name={user.username} src={user.avatar} size="sm" cursor="pointer" />
-                        <Text ml={2} isTruncated maxWidth="200px">{user.username}</Text>
-                      </Flex>
-                    </Button>
+                    <ProfileLink/>
                     <Button as={Link} to="/" onClick={onClose} w="100%" gap={2}><HiOutlineHome /> Home</Button>
                     <Button as={Link} to="/addons" onClick={onClose} w="100%" gap={2}><IoExtensionPuzzleOutline /> Addons</Button>
                     <Button as={Link} to="/worlds" onClick={onClose} w="100%" gap={2}><BiWorld /> Worlds</Button>
@@ -49,7 +51,7 @@ const TopBar = ({ user, onLogin, onLogout }) => {
                   </>
                 ) : (
                   <>
-                    <Button w="100%" onClick={onLogin}>Login</Button>
+                    <Button w="100%" onClick={isOpen}>Register</Button>
                     <Button as={Link} to="/" onClick={onClose} w="100%" gap={2}><HiOutlineHome /> Home</Button>
                     <Button as={Link} to="/addons" onClick={onClose} w="100%" gap={2}><IoExtensionPuzzleOutline /> Addons</Button>
                     <Button as={Link} to="/worlds" onClick={onClose} w="100%" gap={2}><BiWorld /> Worlds</Button>
@@ -77,6 +79,10 @@ const TopBar = ({ user, onLogin, onLogout }) => {
           </DrawerContent>
         </Drawer>
       </>
+      <AuthModal
+        isOpen={isAuthModalOpen}
+        onClose={onAuthModalClose}
+      />
     </Flex>
   );
 };

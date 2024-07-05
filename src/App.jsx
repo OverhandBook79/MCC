@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Routes, Route } from 'react-router-dom';
 import { Box } from '@chakra-ui/react';
-import { useDisclosure } from '@chakra-ui/react'; 
+import { useDisclosure } from '@chakra-ui/react';
 import { v4 as uuidv4 } from 'uuid';
 
 import HomePage from './pages/HomePage/HomePage';
@@ -16,6 +16,7 @@ import AddonsPage from "./pages/AddonPage/AddonsPage";
 import ServersPage from "./pages/ServerPage/ServersPage";
 import SkinsPage from "./pages/SkinPage/SkinsPage";
 import PostPage from "./pages/PostPage/PostPage";
+import PageLayout from './Layouts/PageLayout/PageLayout';
 
 const App = () => {
   const [user, setUser] = useState(null);
@@ -58,16 +59,6 @@ const App = () => {
     }
     onAuthModalClose(); // Close the authentication modal after login/signup
   };
-
-  const handleLogout = () => {
-    setUser(null);
-    localStorage.removeItem('user');
-  };
-
-  const switchAuthMode = () => {
-    setIsSignUp(prev => !prev);
-  };
-
   const handleAvatarChange = () => {
     const updatedUser = { ...user, avatar: tempAvatar };
     setUser(updatedUser);
@@ -84,49 +75,36 @@ const App = () => {
 
   return (
     <>
-        <Box position="fixed" top={0} left={0} width="100%" zIndex={1000}>
-          <TopBar user={user} onLogin={onAuthModalOpen} onLogout={handleLogout} />
-        </Box>
-        <Box flex="1" mt="80px">
-          <Routes>
-            <Route path="/" element={<HomePage />} />
-            <Route path="/profile" element={<ProfilePage user={user} onAvatarModalOpen={onAvatarModalOpen} onBioModalOpen={onBioModalOpen} />} />
-            <Route path="/addons" element={<AddonsPage />} />
-            <Route path="/worlds" element={<WorldsPage />} />
-            <Route path="/skins" element={<SkinsPage />} />
-            <Route path="/uploadcreation" element={<UploadPage />} />
-            <Route path="/post/:id" element={<PostPage />} />
-            <Route path="/servers" element={<ServersPage />} />
-          </Routes>
-        </Box>
-        
-        <AuthModal 
-          isOpen={isAuthModalOpen} 
-          onClose={onAuthModalClose} 
-          isSignUp={isSignUp} 
-          formData={formData} 
-          handleInputChange={handleInputChange} 
-          handleAuth={handleAuth} 
-          switchAuthMode={switchAuthMode} 
-        />
+      <PageLayout>
+        <Routes>
+          <Route path="/" element={<HomePage />} />
+          <Route path="/:username" element={<ProfilePage user={user} onAvatarModalOpen={onAvatarModalOpen} onBioModalOpen={onBioModalOpen} />} />
+          <Route path="/addons" element={<AddonsPage />} />
+          <Route path="/worlds" element={<WorldsPage />} />
+          <Route path="/skins" element={<SkinsPage />} />
+          <Route path="/uploadcreation" element={<UploadPage />} />
+          <Route path="/post/:id" element={<PostPage />} />
+          <Route path="/servers" element={<ServersPage />} />
+        </Routes>
+      </PageLayout>
 
-        <AvatarModal 
-          isOpen={isAvatarModalOpen} 
-          onClose={onAvatarModalClose} 
-          tempAvatar={tempAvatar} 
-          setTempAvatar={setTempAvatar} 
-          handleAvatarChange={handleAvatarChange} 
-        />
+      <AvatarModal
+        isOpen={isAvatarModalOpen}
+        onClose={onAvatarModalClose}
+        tempAvatar={tempAvatar}
+        setTempAvatar={setTempAvatar}
+        handleAvatarChange={handleAvatarChange}
+      />
 
-        <ProfileEditModal 
-          isOpen={isBioModalOpen} 
-          onClose={onBioModalClose} 
-          tempBio={tempBio} 
-          setTempBio={setTempBio} 
-          tempUsername={tempUsername} 
-          setTempUsername={setTempUsername} 
-          handleBioAndUsernameChange={handleBioAndUsernameChange} 
-        />
+      <ProfileEditModal
+        isOpen={isBioModalOpen}
+        onClose={onBioModalClose}
+        tempBio={tempBio}
+        setTempBio={setTempBio}
+        tempUsername={tempUsername}
+        setTempUsername={setTempUsername}
+        handleBioAndUsernameChange={handleBioAndUsernameChange}
+      />
     </>
   );
 };
