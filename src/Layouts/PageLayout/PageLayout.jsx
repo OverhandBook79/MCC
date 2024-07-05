@@ -14,7 +14,7 @@ const PageLayout = ({ children }) => {
           <TopBar/>
         </Box>
 		<Container maxW={"container.lg"}>
-			<Flex gap={20}>
+			<Flex>
 				<Box flex={2} py={10}>
 					{children}
 				</Box>
