@@ -1,13 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { Routes, Route } from 'react-router-dom';
-import { Box, VStack } from '@chakra-ui/react';
+import { Box } from '@chakra-ui/react';
 import { useDisclosure } from '@chakra-ui/react'; 
 import { v4 as uuidv4 } from 'uuid';
 
 import HomePage from './pages/HomePage/HomePage';
 import ProfilePage from './pages/ProfilePage/ProfilePage';
 import TopBar from './components/TopBar/TopBar';
-import BottomBar from './components/BottomBar/BottomBar';
 import AuthModal from './components/ProfileModal/AuthModal';
 import AvatarModal from './components/ProfileModal/AvatarModal';
 import ProfileEditModal from './components/ProfileModal/ProfileEditModal';
@@ -99,9 +98,6 @@ const App = () => {
             <Route path="/post/:id" element={<PostPage />} />
             <Route path="/servers" element={<ServersPage />} />
           </Routes>
-        </Box>
-        <Box position="sticky" bottom={0} zIndex={1}>
-          <BottomBar />
         </Box>
         
         <AuthModal 

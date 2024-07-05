@@ -1,8 +1,8 @@
 // src/components/TopBar.jsx
 import React from 'react';
-import { Flex, Button, Avatar, Text, useDisclosure, Drawer, DrawerOverlay, DrawerContent, DrawerHeader, DrawerBody, DrawerCloseButton, VStack, Input, useColorModeValue, Link as ChakraLink, useColorMode, Link, Image, IconButton } from '@chakra-ui/react';
+import { Flex, Button, Avatar, Text, useDisclosure, Drawer, DrawerOverlay, DrawerContent, DrawerHeader, DrawerBody, DrawerCloseButton, VStack, Input, useColorModeValue, useColorMode, Image, IconButton } from '@chakra-ui/react';
 import { RxHamburgerMenu } from "react-icons/rx";
-import { Link as RouterLink } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import { CiLogout } from "react-icons/ci";
 import { BiWorld } from "react-icons/bi";
 import { TbWorld } from "react-icons/tb";
@@ -19,9 +19,9 @@ const TopBar = ({ user, onLogin, onLogout }) => {
 
   return (
     <Flex justifyContent="space-between" p={4} borderBottom="1px" borderColor="gray.200" bgColor={bgColor} gap={2}>
-      <ChakraLink as={Link} to="/">
+      <Flex as={Link} to="/">
         <Image src={logoSrc} h={10} w={45} cursor="pointer" />
-      </ChakraLink>
+      </Flex>
       <Input placeholder="Search" width="full" />
       <>
         <Button onClick={onOpen}><RxHamburgerMenu /></Button>
