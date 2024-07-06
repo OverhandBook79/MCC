@@ -27,7 +27,7 @@ import { useAuthState } from 'react-firebase-hooks/auth';
 import { auth } from '../../firebase/firebase'
 import useSignout from "../../hooks/useSignout";
 
-const TopBarDrawer = ({ isOpen, onClose, toggleColorMode }) => {
+const TopBarDrawer = ({ isOpen, onClose }) => {
   const [user] = useAuthState(auth);
   const { colorMode, toggleColorMode } = useColorMode();
   const { handleLogout, isLoggingOut } = useSignout()
