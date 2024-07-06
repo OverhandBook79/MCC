@@ -21,19 +21,21 @@ const PageLayout = ({ children }) => {
           {children}
         </Box>
       ) : (
-        <Container maxW={"container.lg"}>
-          <Box position="fixed" top={0} left={0} width="100%" zIndex={1000}>
+        <Flex>
+        <Box position="fixed" top={0} left={0} width="100%" zIndex={1000}>
             <TopBar />
           </Box>
+            <Container maxW={"full"}>
           <Flex>
             <Box flex={2} py={10} mt={9} w={"full"}>
               {children}
             </Box>
-            <Box flex={3} mr={20} display={{ base: "none", md: "block" }} maxW={"250px"} mt={20}>
+            <Box flex={3} mr={20} display={{ base: "none", md: "block" }} maxW={"250px"} minW={"250px"} mt={20}>
               Ads
             </Box>
           </Flex>
         </Container>
+        </Flex>
       )}
     </>
   );

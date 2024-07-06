@@ -75,12 +75,12 @@ const PostPage = () => {
   };
 
   return (
-    <Flex direction='column' w='full' px={2} gap={5}>
+    <Flex direction='column' w='full' px={1} mt={-2} gap={5}>
       <Flex p={2} gap={2}>
-        <Flex w='full' direction='column' justifyContent='center'>
-          <Text as='span' fontWeight='bold' fontSize={20}>{post.title}</Text>
-          <Flex alignItems='center' justifyContent='center'>
-            <Image aspectRatio={16/9} maxH='450px' src={post.thumbnail} borderRadius={10} />
+        <Flex w='full' direction='column' justifyContent={{base:'left' , md: 'center' }} gap={1}>
+          <Text fontWeight='bold' fontSize={20}>{post.title}</Text>
+          <Flex alignItems='center' justifyContent={'left'}>
+            <Image mixW='full' maxW='full' src={post.thumbnail} borderRadius={10} />
           </Flex>
           <Text as='span' fontWeight='bold'> Created By {post.username}</Text>
           <Text as='span' fontSize={11}>Created at {post.date}</Text>
