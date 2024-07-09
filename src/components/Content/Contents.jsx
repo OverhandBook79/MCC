@@ -2,27 +2,14 @@ import { Flex, VStack } from "@chakra-ui/react";
 import Content from "./Content";
 import React from "react";
 
-const Contents = ({ contents }) => {
+const Contents = () => {
   return (
-    <VStack>  
-      <Flex gap={4} overflowX="auto">
-        {contents.length > 0 ? contents.map(content => (
-          <Content 
-            key={content.id} 
-            id={content.id} 
-            img={content.thumbnail} 
-            title={content.title} 
-            date={content.date} 
-          />
-        )) : (
-          <Content 
-            key="no-content" 
-            id="no-content" 
-            img="placeholder_image_url" // Use a placeholder image URL
-            title="No content here" 
-            date="" 
-          />
-        )}
+    <VStack w={'full'}>  
+      <Flex gap={4} w={'full'} overflowX="auto" justifyContent={'left'} alignItems={'flex-start'}>
+          <Content />
+          <Content />
+          <Content />
+          <Content />
       </Flex>
     </VStack>
   );

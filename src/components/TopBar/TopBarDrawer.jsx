@@ -12,7 +12,8 @@ import {
   Link,
   Flex,
   IconButton,
-  useColorMode
+  useColorMode,
+  Input
 } from '@chakra-ui/react';
 import { HiOutlineHome } from 'react-icons/hi';
 import { IoExtensionPuzzleOutline } from 'react-icons/io5';
@@ -41,6 +42,9 @@ const TopBarDrawer = ({ isOpen, onClose }) => {
         <DrawerHeader>Menu</DrawerHeader>
         <DrawerBody>
           <VStack spacing={4}>
+            <Flex display={{ base: "block", md: "none" }} w={'full'}>
+              <Input placeholder="Search" display={{ base: "block", md: "none" }} w={'full'} />
+            </Flex>
             {renderUser ? (
               <>
                 <ProfileLink onClose={onClose} />
@@ -65,7 +69,7 @@ const TopBarDrawer = ({ isOpen, onClose }) => {
               <Link href="https://github.com/OverhandBook79" isExternal>
                 <IconButton icon={<FaGithub />} />
               </Link>
-              <Link href="https://youtube.com/@overhandbook79?si=sy6-m4INPuUcq1Ia" isExternal>
+              <Link href="https://youtube.com/@overhandbook79" isExternal>
                 <IconButton icon={<FaYoutube />} />
               </Link>
               <IconButton onClick={toggleColorMode}>

@@ -1,32 +1,49 @@
-import { Button, Flex, Input, Text, VStack, Tag, TagLabel, HStack, List, ListItem } from '@chakra-ui/react';
+import { Button, Flex, Input, Text, VStack, Tag, TagLabel, HStack, List, ListItem, Image } from '@chakra-ui/react';
 import React, { useState, useRef } from 'react';
 import { TbDragDrop2 } from 'react-icons/tb';
 import { useNavigate } from 'react-router-dom';
-import { v4 as uuidv4 } from 'uuid';
 import JSZip from 'jszip';
+import { addDoc, collection, serverTimestamp, updateDoc, doc } from 'firebase/firestore';
+import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
+import { useAuthState } from 'react-firebase-hooks/auth';
+import { firestore, storage, auth } from '../../firebase/firebase';
 
 const CreationForm = () => {
+  const [authUser] = useAuthState(auth);
   const navigate = useNavigate();
   const inputRef = useRef();
-  const [form, setForm] = useState({
+  const [inputs, setInputs] = useState({
     title: '',
     category: '',
     description: '',
     features: '',
     specification: '',
     thumbnail: '',
+    thumbnailFile: null,
     files: [],
-    compressedFiles: [],
   });
   const [error, setError] = useState('');
+  const [thumbnailPreview, setThumbnailPreview] = useState('');
 
   const handleChange = (e) => {
-    setForm({ ...form, [e.target.name]: e.target.value });
+    setInputs({ ...inputs, [e.target.name]: e.target.value });
   };
 
   const handleFileChange = (e) => {
     const files = Array.from(e.target.files);
-    setForm({ ...form, files });
+    setInputs({ ...inputs, files });
+  };
+
+  const handleThumbnailChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      setInputs({ ...inputs, thumbnailFile: file });
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setThumbnailPreview(reader.result);
+      };
+      reader.readAsDataURL(file);
+    }
   };
 
   const handleDragOver = (event) => {
@@ -36,66 +53,87 @@ const CreationForm = () => {
   const handleDrop = (event) => {
     event.preventDefault();
     const files = Array.from(event.dataTransfer.files);
-    setForm({ ...form, files });
+    setInputs({ ...inputs, files });
   };
 
-  const compressFiles = async (files) => {
+  const compressFile = async (file) => {
     const zip = new JSZip();
-    files.forEach((file) => {
-      zip.file(file.name, file);
-    });
-    let compressed = await zip.generateAsync({ type: 'blob', compression: 'DEFLATE', compressionOptions: { level: 9 } });
-    
-    if (compressed.size > 5120) { // Check if the compressed file size exceeds 5KB
-      const newZip = new JSZip();
-      files.forEach((file) => {
-        newZip.file(file.name, file.slice(0, 5120));
-      });
-      compressed = await newZip.generateAsync({ type: 'blob', compression: 'DEFLATE', compressionOptions: { level: 9 } });
-    }
-    
+    zip.file(file.name, file);
+    const compressed = await zip.generateAsync({ type: 'blob', compression: 'DEFLATE', compressionOptions: { level: 9 } });
     return compressed;
   };
 
   const handleUpload = async () => {
-    setError('');
-    const compressedFile = await compressFiles(form.files);
-    
-    if (compressedFile.size > 5120) { // 5KB in bytes
-      setError('The compressed file size exceeds 5KB.');
+    if (!authUser) {
+      setError('You need to be logged in to upload a post.');
       return;
     }
-    
-    const newContent = {
-      ...form,
-      files: form.files.map(file => file.name), // Store file names
-      compressedFile, // Store the compressed blob
-      id: uuidv4(), // Generate a unique ID
-      date: new Date().toLocaleDateString(),
-    };
-    const data = JSON.parse(localStorage.getItem('contents')) || [];
-    data.push(newContent);
-    localStorage.setItem('contents', JSON.stringify(data));
-    navigate(`/post/${newContent.id}`);
+
+    setError('');
+
+    try {
+      // Upload thumbnail
+      let thumbnailURL = '';
+      if (inputs.thumbnailFile) {
+        const thumbnailRef = ref(storage, `thumbnails/${inputs.thumbnailFile.name}`);
+        await uploadBytes(thumbnailRef, inputs.thumbnailFile);
+        thumbnailURL = await getDownloadURL(thumbnailRef);
+      }
+
+      // Create a new document in Firestore and get its ID
+      const newContent = {
+        title: inputs.title,
+        category: inputs.category,
+        description: inputs.description,
+        features: inputs.features,
+        specification: inputs.specification,
+        thumbnail: thumbnailURL,
+        files: [],
+        likes: [],
+        comments: [],
+        createdAt: serverTimestamp(),
+        createdBy: authUser.uid,
+      };
+
+      const docRef = await addDoc(collection(firestore, 'contents'), newContent);
+      const postId = docRef.id;
+
+      // Upload files
+      const fileUrls = [];
+      for (const file of inputs.files) {
+        const compressedFile = await compressFile(file);
+        const fileRef = ref(storage, `posts/${postId}/${file.name}.zip`);
+        await uploadBytes(fileRef, compressedFile);
+        const fileUrl = await getDownloadURL(fileRef);
+        fileUrls.push(fileUrl);
+      }
+
+      // Update the document with the file URLs
+      await updateDoc(doc(firestore, 'contents', postId), { files: fileUrls });
+
+      navigate(`/post/${postId}`);
+    } catch (error) {
+      console.error('Error uploading post:', error);
+      setError('Failed to upload post. Please try again.');
+    }
   };
 
   const selectCategory = (category) => {
-    setForm({ ...form, category });
+    setInputs({ ...inputs, category });
   };
 
   return (
     <Flex direction={'column'} gap={2}>
       <Text fontSize={'bold'}>Title of your creation</Text>
-      <Input name='title' value={form.title} onChange={handleChange} placeholder='Title' />
-
+      <Input name='title' value={inputs.title} onChange={handleChange} placeholder='Title' />
       <Text fontSize={'bold'}>Category</Text>
       <HStack spacing={4}>
-        {['Addon', 'World', 'Skin'].map((category) => (
+        {['Addon', 'World', 'Skin', 'Server'].map((category) => (
           <Tag
             size={'md'}
             key={category}
             borderRadius='full'
-            variant={form.category === category ? 'solid' : 'outline'}
+            variant={inputs.category === category ? 'solid' : 'outline'}
             colorScheme='teal'
             onClick={() => selectCategory(category)}
             cursor='pointer'
@@ -105,17 +143,22 @@ const CreationForm = () => {
         ))}
       </HStack>
 
-      <Text fontSize={'bold'}>Thumbnail URL</Text>
-      <Input name='thumbnail' value={form.thumbnail} onChange={handleChange} placeholder='Thumbnail URL' />
+      <Text fontSize={'bold'}>Thumbnail</Text>
+      <Input type='file' accept='image/*' onChange={handleThumbnailChange} />
+      {thumbnailPreview && <Image src={thumbnailPreview} alt='Thumbnail Preview' 
+          minW="340px"
+          minH="180px"
+          maxW="340px"
+          maxH="180px" borderRadius={'md'} mt={2} />}
 
       <Text fontSize={'bold'}>Describe your creation</Text>
-      <Input name='description' value={form.description} onChange={handleChange} placeholder='Description' />
+      <Input name='description' value={inputs.description} onChange={handleChange} placeholder='Description' />
 
       <Text fontSize={'bold'}>Features of your creation</Text>
-      <Input name='features' value={form.features} onChange={handleChange} placeholder='Features' />
+      <Input name='features' value={inputs.features} onChange={handleChange} placeholder='Features' />
 
       <Text fontSize={'bold'}>Specification of your creation</Text>
-      <Input name='specification' value={form.specification} onChange={handleChange} placeholder='Specification' />
+      <Input name='specification' value={inputs.specification} onChange={handleChange} placeholder='Specification' />
 
       <Flex
         border='2px dashed gray'
@@ -133,14 +176,12 @@ const CreationForm = () => {
         <Button onClick={() => inputRef.current.click()}>Select Files</Button>
       </Flex>
 
-      {form.files.length > 0 && (
+      {inputs.files.length > 0 && (
         <VStack align='start' mt={4}>
           <Text fontSize={'bold'}>Files to be uploaded:</Text>
-          <List spacing={2}>
-            {form.files.map((file, index) => (
-              <ListItem key={index}>{file.name}</ListItem>
-            ))}
-          </List>
+          {inputs.files.map((file, index) => (
+            <Text key={index}>{file.name}</Text>
+          ))}
         </VStack>
       )}
 

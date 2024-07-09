@@ -1,14 +1,30 @@
 import React from 'react';
 import { Avatar, Box, Button, Flex, Text, useColorModeValue } from '@chakra-ui/react';
+import { Link } from 'react-router-dom';
+import useGetUserProfileById from "../../hooks/useGetUserProfileById";
 
-const Comment = ({ comment, currentUser, onReply, onDelete }) => {
+const Comment = ({ comment }) => {
   const bgColor = useColorModeValue("gray.50", "gray.900");
-
+  const { userProfile, isLoading } = useGetUserProfileById(comment.createdBy);
+  const CommentSkeleton = () => {
+    return (
+      <Flex gap={4} w={"full"} alignItems={"center"}>
+        <SkeletonCircle h={10} w='10' />
+        <Flex gap={1} flexDir={"column"}>
+          <Skeleton height={2} width={100} />
+          <Skeleton height={2} width={50} />
+        </Flex>
+      </Flex>
+    );
+  };
+  if (isLoading) return <CommentSkeleton />;
   return (
     <Box mb={4} border="1px solid #e2e8f0" borderRadius="md" p={4}>
       <Flex alignItems="center" justifyContent="space-between">
         <Flex alignItems="center">
-          <Avatar size="sm" src={comment.avatar} name={comment.username} />
+          <Link to={`/${userProfile.username}`}>
+            <Avatar src={userProfile.profilePicURL} size={"sm"} />
+          </Link>
           <Box ml={3}>
             <Text fontWeight="bold">{comment.username}</Text>
             <Text fontSize="sm">{comment.createdAt}</Text>
@@ -31,6 +47,7 @@ const Comment = ({ comment, currentUser, onReply, onDelete }) => {
         Reply
       </Button>
     </Box>
+    
   );
 };
 

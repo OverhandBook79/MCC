@@ -13,10 +13,12 @@ const TopBar = () => {
 
   return (
     <Flex justifyContent="space-between" p={4} borderBottom="1px" borderColor="gray.200" bgColor={bgColor} gap={2}>
-      <Flex as={Link} to="/">
-        <Image src={logoSrc} h={10} cursor="pointer" />
+      <Flex as={Link} to="/" width={10}>
+        <Image aspectRatio={1/1} src={logoSrc} h={10} cursor="pointer" />
       </Flex>
-      <Input placeholder="Search" width="full" />
+      <Flex display={{ base: "none", md: "block" }} w={'full'}>
+        <Input placeholder="Search" display={{ base: "none", md: "block" }} w={'full'}/>
+      </Flex>
       <Flex>
         <Button onClick={onOpen}><RxHamburgerMenu /></Button>
         <TopBarDrawer isOpen={isOpen} onClose={onClose} />

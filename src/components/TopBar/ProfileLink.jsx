@@ -1,5 +1,4 @@
-// src/components/ProfileLink.jsx
-import { Avatar, Box, Button, Flex, Link, Text } from "@chakra-ui/react";
+import { Avatar, Box, Button, Flex, Text } from "@chakra-ui/react";
 import { Link as RouterLink } from "react-router-dom";
 import useAuthStore from "../../store/authStore";
 

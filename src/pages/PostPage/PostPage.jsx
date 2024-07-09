@@ -3,71 +3,86 @@ import { useParams } from 'react-router-dom';
 import { Avatar, Box, Button, Divider, Flex, Image, Input, InputGroup, InputRightElement, Text, useColorModeValue } from '@chakra-ui/react';
 import { AiOutlineSend } from 'react-icons/ai';
 import Comment from '../../components/Comment/Comment';
+import { firestore, storage, auth } from '../../firebase/firebase';
+import { collection, doc, getDoc, getDocs, addDoc, deleteDoc, serverTimestamp } from 'firebase/firestore';
+import { ref, getDownloadURL } from 'firebase/storage';
+import { useAuthState } from 'react-firebase-hooks/auth';
 
 const PostPage = () => {
   const { id } = useParams();
   const bgColor = useColorModeValue("gray.50", "gray.900");
-  const [comments, setComments] = useState(JSON.parse(localStorage.getItem(`comments-${id}`)) || []);
-  const [currentUser, setCurrentUser] = useState({ userId: '', username: 'Anonymous', avatar: '' });
+  const [post, setPost] = useState(null);
+  const [comments, setComments] = useState([]);
+  const [currentUser] = useAuthState(auth);
   const [newCommentText, setNewCommentText] = useState('');
   const [replyTo, setReplyTo] = useState(null);
 
   useEffect(() => {
-    const storedUser = JSON.parse(localStorage.getItem('user'));
-    if (storedUser) {
-      setCurrentUser({
-        userId: storedUser.userId,
-        username: storedUser.username,
-        avatar: storedUser.avatar,
-      });
-    } else {
-      setCurrentUser({ userId: '', username: 'Anonymous', avatar: '' });
-    }
-  }, []);
+    const fetchPost = async () => {
+      const postDoc = await getDoc(doc(firestore, 'contents', id));
+      if (postDoc.exists()) {
+        setPost(postDoc.data());
+      }
+    };
 
-  const contents = JSON.parse(localStorage.getItem('contents')) || [];
-  const post = contents.find(content => content.id === id);
+    const fetchComments = async () => {
+      const commentsSnapshot = await getDocs(collection(firestore, 'contents', id, 'comments'));
+      const commentsList = commentsSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+      setComments(commentsList);
+    };
+
+    fetchPost();
+    fetchComments();
+  }, [id]);
 
   if (!post) {
     return <div>Post not found</div>;
   }
 
-  const handleDownload = () => {
-    const blob = new Blob([post.compressedFile], { type: 'application/zip' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `${post.title}.zip`;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
+  const handleDownload = async () => {
+    try {
+      const fileRef = ref(storage, `posts/${id}/${post.file}.zip`);
+      const url = await getDownloadURL(fileRef);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `${post.title}.zip`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+    } catch (error) {
+      console.error('Error downloading file:', error);
+    }
   };
 
-  const handleCommentSubmit = () => {
-    if (!newCommentText.trim()) return;
+  const handleCommentSubmit = async () => {
+    if (!newCommentText.trim() || !currentUser) return;
 
     const newComment = {
-      id: Date.now(),
-      userId: currentUser.userId,
-      avatar: currentUser.avatar,
-      username: currentUser.username,
+      userId: currentUser.uid,
+      avatar: currentUser.photoURL || '',
+      username: currentUser.displayName || 'Anonymous',
       text: newCommentText,
-      createdAt: new Date().toLocaleDateString(),
+      createdAt: serverTimestamp(),
       replyTo: replyTo ? { username: replyTo.username, text: replyTo.text } : null,
     };
 
-    const updatedComments = [...comments, newComment];
-    setComments(updatedComments);
-    localStorage.setItem(`comments-${id}`, JSON.stringify(updatedComments));
-    setNewCommentText('');
-    setReplyTo(null);
+    try {
+      const commentDocRef = await addDoc(collection(firestore, 'contents', id, 'comments'), newComment);
+      setComments([...comments, { id: commentDocRef.id, ...newComment }]);
+      setNewCommentText('');
+      setReplyTo(null);
+    } catch (error) {
+      console.error('Error adding comment:', error);
+    }
   };
 
-  const handleDeleteComment = (commentId) => {
-    const updatedComments = comments.filter(comment => comment.id !== commentId);
-    setComments(updatedComments);
-    localStorage.setItem(`comments-${id}`, JSON.stringify(updatedComments));
+  const handleDeleteComment = async (commentId) => {
+    try {
+      await deleteDoc(doc(firestore, 'contents', id, 'comments', commentId));
+      setComments(comments.filter(comment => comment.id !== commentId));
+    } catch (error) {
+      console.error('Error deleting comment:', error);
+    }
   };
 
   const handleReply = (comment) => {
@@ -83,7 +98,7 @@ const PostPage = () => {
             <Image mixW='full' maxW='full' src={post.thumbnail} borderRadius={10} />
           </Flex>
           <Text as='span' fontWeight='bold'> Created By {post.username}</Text>
-          <Text as='span' fontSize={11}>Created at {post.date}</Text>
+          <Text as='span' fontSize={11}>Created at {new Date(post.createdAt.seconds * 1000).toLocaleDateString()}</Text>
         </Flex>
       </Flex>
 
@@ -98,15 +113,9 @@ const PostPage = () => {
 
       <Flex direction='column' gap={4}>
         <Text fontSize='xl'>Comments</Text>
-        {comments.map(comment => (
-          <Comment
-            key={comment.id}
-            comment={comment}
-            currentUser={currentUser}
-            onDelete={handleDeleteComment}
-            onReply={handleReply}
-          />
-        ))}
+        {post.comments.map((comment) => (
+										<Comment key={comment.id} comment={comment} />
+									))}
 
         {replyTo && (
           <Box mt={4} p={2} bg={bgColor} borderRadius="md">
@@ -117,7 +126,7 @@ const PostPage = () => {
 
         <Flex alignItems='center' w='full'>
           <Flex alignItems='center' gap={2} w='full'>
-            <Avatar src={currentUser.avatar} name={currentUser.username} size={{ md: 'sm', base: 'xs' }} />
+            <Avatar src={currentUser?.photoURL} name={currentUser?.displayName || 'Anonymous'} size={{ md: 'sm', base: 'xs' }} />
             <InputGroup>
               <Input
                 fontSize={{ md: '14px', base: '10px' }}
