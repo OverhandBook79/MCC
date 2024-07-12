@@ -18,11 +18,13 @@ const Content = () => {
       const docRef = doc(firestore, 'posts', id);
       const docSnap = await getDoc(docRef);
       if (docSnap.exists()) {
-        setPost(docSnap.data());
+        const postData = docSnap.data();
+        setPost(postData);
       }
     };
     fetchPost();
   }, [id]);
+  
   if (isLoading) {
     <Box
       maxWidth="360px"
