@@ -1,15 +1,14 @@
-import { Button, Flex, Input, Text, VStack, Tag, TagLabel, HStack, List, ListItem, Image } from '@chakra-ui/react';
+import { Button, Flex, Input, Text, VStack, Tag, TagLabel, HStack, Image } from '@chakra-ui/react';
 import React, { useState, useRef } from 'react';
 import { TbDragDrop2 } from 'react-icons/tb';
 import { useNavigate } from 'react-router-dom';
-import JSZip from 'jszip';
 import { addDoc, collection, serverTimestamp, updateDoc, doc } from 'firebase/firestore';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
-import { useAuthState } from 'react-firebase-hooks/auth';
-import { firestore, storage, auth } from '../../firebase/firebase';
+import { firestore, storage } from '../../firebase/firebase';
+import useAuthStore from '../../store/authStore';
 
 const CreationForm = () => {
-  const [authUser] = useAuthState(auth);
+	const authUser = useAuthStore((state) => state.user);
   const navigate = useNavigate();
   const inputRef = useRef();
   const [inputs, setInputs] = useState({
@@ -21,6 +20,10 @@ const CreationForm = () => {
     thumbnail: '',
     thumbnailFile: null,
     files: [],
+    likes: [],
+    comments: [],
+    createdAt: Date.now(),
+    createdBy: authUser.uid,
   });
   const [error, setError] = useState('');
   const [thumbnailPreview, setThumbnailPreview] = useState('');
@@ -31,7 +34,13 @@ const CreationForm = () => {
 
   const handleFileChange = (e) => {
     const files = Array.from(e.target.files);
-    setInputs({ ...inputs, files });
+    const validFiles = files.filter(file => file.size <= 2048); // 2KB = 2048 bytes
+    if (validFiles.length !== files.length) {
+      setError('Some files are larger than 2KB and were not added.');
+    } else {
+      setError('');
+    }
+    setInputs({ ...inputs, files: validFiles });
   };
 
   const handleThumbnailChange = (e) => {
@@ -53,14 +62,13 @@ const CreationForm = () => {
   const handleDrop = (event) => {
     event.preventDefault();
     const files = Array.from(event.dataTransfer.files);
-    setInputs({ ...inputs, files });
-  };
-
-  const compressFile = async (file) => {
-    const zip = new JSZip();
-    zip.file(file.name, file);
-    const compressed = await zip.generateAsync({ type: 'blob', compression: 'DEFLATE', compressionOptions: { level: 9 } });
-    return compressed;
+    const validFiles = files.filter(file => file.size <= 2048); // 2KB = 2048 bytes
+    if (validFiles.length !== files.length) {
+      setError('Some files are larger than 2KB and were not added.');
+    } else {
+      setError('');
+    }
+    setInputs({ ...inputs, files: validFiles });
   };
 
   const handleUpload = async () => {
@@ -72,14 +80,6 @@ const CreationForm = () => {
     setError('');
 
     try {
-      // Upload thumbnail
-      let thumbnailURL = '';
-      if (inputs.thumbnailFile) {
-        const thumbnailRef = ref(storage, `thumbnails/${inputs.thumbnailFile.name}`);
-        await uploadBytes(thumbnailRef, inputs.thumbnailFile);
-        thumbnailURL = await getDownloadURL(thumbnailRef);
-      }
-
       // Create a new document in Firestore and get its ID
       const newContent = {
         title: inputs.title,
@@ -87,7 +87,7 @@ const CreationForm = () => {
         description: inputs.description,
         features: inputs.features,
         specification: inputs.specification,
-        thumbnail: thumbnailURL,
+        thumbnail: '',
         files: [],
         likes: [],
         comments: [],
@@ -95,21 +95,31 @@ const CreationForm = () => {
         createdBy: authUser.uid,
       };
 
-      const docRef = await addDoc(collection(firestore, 'contents'), newContent);
+      const docRef = await addDoc(collection(firestore, 'posts'), newContent);
       const postId = docRef.id;
+
+      // Upload thumbnail
+      let thumbnailURL = '';
+      if (inputs.thumbnailFile) {
+        const thumbnailRef = ref(storage, `posts/${postId}/${postId}.thumbnail`);
+        await uploadBytes(thumbnailRef, inputs.thumbnailFile);
+        thumbnailURL = await getDownloadURL(thumbnailRef);
+      }
 
       // Upload files
       const fileUrls = [];
       for (const file of inputs.files) {
-        const compressedFile = await compressFile(file);
-        const fileRef = ref(storage, `posts/${postId}/${file.name}.zip`);
-        await uploadBytes(fileRef, compressedFile);
+        const fileRef = ref(storage, `posts/${postId}/${postId}.${file.name.split('.').pop()}`);
+        await uploadBytes(fileRef, file);
         const fileUrl = await getDownloadURL(fileRef);
         fileUrls.push(fileUrl);
       }
 
-      // Update the document with the file URLs
-      await updateDoc(doc(firestore, 'contents', postId), { files: fileUrls });
+      // Update the document with the file URLs and thumbnail URL
+      await updateDoc(doc(firestore, 'posts', postId), { 
+        thumbnail: thumbnailURL, 
+        files: fileUrls 
+      });
 
       navigate(`/post/${postId}`);
     } catch (error) {
@@ -145,11 +155,13 @@ const CreationForm = () => {
 
       <Text fontSize={'bold'}>Thumbnail</Text>
       <Input type='file' accept='image/*' onChange={handleThumbnailChange} />
-      {thumbnailPreview && <Image src={thumbnailPreview} alt='Thumbnail Preview' 
+      {thumbnailPreview && (
+        <Image src={thumbnailPreview} alt='Thumbnail Preview'
           minW="340px"
           minH="180px"
           maxW="340px"
-          maxH="180px" borderRadius={'md'} mt={2} />}
+          maxH="180px" borderRadius={'md'} mt={2} />
+      )}
 
       <Text fontSize={'bold'}>Describe your creation</Text>
       <Input name='description' value={inputs.description} onChange={handleChange} placeholder='Description' />

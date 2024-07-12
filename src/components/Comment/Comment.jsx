@@ -1,53 +1,41 @@
 import React from 'react';
-import { Avatar, Box, Button, Flex, Text, useColorModeValue } from '@chakra-ui/react';
-import { Link } from 'react-router-dom';
-import useGetUserProfileById from "../../hooks/useGetUserProfileById";
+import { Avatar, Box, Flex, Text, Button } from '@chakra-ui/react';
+import { useAuthState } from 'react-firebase-hooks/auth';
+import { auth, firestore } from '../../firebase/firebase';
+import { deleteDoc, doc } from 'firebase/firestore';
+import { FiTrash2 } from 'react-icons/fi';
+import useGetUserProfileById from '../../hooks/useGetUserProfileById';
 
-const Comment = ({ comment }) => {
-  const bgColor = useColorModeValue("gray.50", "gray.900");
-  const { userProfile, isLoading } = useGetUserProfileById(comment.createdBy);
-  const CommentSkeleton = () => {
-    return (
-      <Flex gap={4} w={"full"} alignItems={"center"}>
-        <SkeletonCircle h={10} w='10' />
-        <Flex gap={1} flexDir={"column"}>
-          <Skeleton height={2} width={100} />
-          <Skeleton height={2} width={50} />
-        </Flex>
-      </Flex>
-    );
+const Comment = ({ comment, postId }) => {
+  const [user] = useAuthState(auth);
+  const { isLoading, userProfile } = useGetUserProfileById(comment?.createdBy);
+
+  const handleDeleteComment = async () => {
+    if (comment.createdBy === user.uid) {
+      await deleteDoc(doc(firestore, 'posts', postId, 'comments', comment.id));
+    }
   };
-  if (isLoading) return <CommentSkeleton />;
+
   return (
-    <Box mb={4} border="1px solid #e2e8f0" borderRadius="md" p={4}>
-      <Flex alignItems="center" justifyContent="space-between">
-        <Flex alignItems="center">
-          <Link to={`/${userProfile.username}`}>
-            <Avatar src={userProfile.profilePicURL} size={"sm"} />
-          </Link>
-          <Box ml={3}>
-            <Text fontWeight="bold">{comment.username}</Text>
-            <Text fontSize="sm">{comment.createdAt}</Text>
-          </Box>
+    <Flex p={4} borderRadius='md' boxShadow='md'>
+      <Avatar size="sm" src={userProfile?.profilePicURL} />
+      <Box>
+        <Flex align='center' mb={2}>
+          <Text fontWeight='bold' mr={2}>
+            {comment.userName}
+          </Text>
+          <Text color='gray.500' fontSize='sm'>
+            {new Date(comment.createdAt?.toDate()).toLocaleString()}
+          </Text>
         </Flex>
-        {comment.userId === currentUser.userId && (
-          <Button size="xs" colorScheme="red" onClick={() => onDelete(comment.id)}>
+        <Text mb={2}>{comment.text}</Text>
+        {user?.uid === comment.createdBy && (
+          <Button onClick={handleDeleteComment} colorScheme='red' size='xs' leftIcon={<FiTrash2 />}>
             Delete
           </Button>
         )}
-      </Flex>
-      {comment.replyTo && (
-        <Box mt={2} p={2} bg={bgColor} borderRadius="md">
-          <Text fontWeight="bold">{comment.replyTo.username}</Text>
-          <Text fontSize="sm">{comment.replyTo.text}</Text>
-        </Box>
-      )}
-      <Text mt={2}>{comment.text}</Text>
-      <Button size="xs" colorScheme="blue" mt={2} onClick={() => onReply(comment)}>
-        Reply
-      </Button>
-    </Box>
-    
+      </Box>
+    </Flex>
   );
 };
 

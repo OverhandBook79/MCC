@@ -1,5 +1,5 @@
 import React from 'react';
-import { Box, Container, Flex, Spinner } from "@chakra-ui/react";
+import { Box, Container, Flex, Spinner, useColorModeValue } from "@chakra-ui/react";
 import { useAuthState } from "react-firebase-hooks/auth";
 import { auth } from "../../firebase/firebase";
 import TopBar from "../../components/TopBar/TopBar";
@@ -7,7 +7,7 @@ import Ads from '../../components/Ads/Ads';
 
 const PageLayout = ({ children }) => {
   const [user, loading] = useAuthState(auth);
-
+  const bgColor = useColorModeValue("gray.50", "gray.900");
   const checkingUserIsAuth = !user && loading;
   if (checkingUserIsAuth) return <PageLayoutSpinner />;
 
@@ -19,10 +19,10 @@ const PageLayout = ({ children }) => {
           </Box>
             <Container maxW={"full"}>
           <Flex>
-            <Box flex={2} py={10} mt={9} w={"full"} >
+            <Box py={10} mt={9} w={"full"}>
               {children}
             </Box>
-            <Box flex={3} mr={20} display={{ base: "none", md: "block" }} maxW={"250px"} minW={"250px"} mt={20}>
+            <Box flex={3} display={{ base: "none", md: "block" }} maxW={"300px"} minW={"300px"} mt={20} top={0} position={'sticky'} >
               <Ads />
             </Box>
           </Flex>

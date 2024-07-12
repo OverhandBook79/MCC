@@ -1,27 +1,27 @@
-import { Box, Container, Flex } from "@chakra-ui/react";
-import Contents from "../../components/Content/Contents";
+// import { Box, Container, Flex } from "@chakra-ui/react";
+// import Contents from "../../components/Content/Contents";
 
-const SkinsPage = () => {
-    return (
-      <Container maxW="container.xl" overflowY="auto">
-      <Flex>
-        <Box flex="1" overflowX="auto">
-          <SimpleGrid minChildWidth="250px" spacing={4} display="flex" flexDirection="column">
-            <Box overflowX="auto">
-              <Contents categoryicon={''} category={"Populer"} />
-            </Box>
-            <Box overflowX="auto">
-              <Contents categoryicon={''} category={"Newest"} />
-            </Box>
-            <Box overflowX="auto">
-              <Contents categoryicon={''} category={"Oldest"} />
-            </Box>
-          </SimpleGrid>
-        </Box>
-      </Flex>
-    </Container>
-      );
-    };
+// const SkinsPage = () => {
+//     return (
+//       <Container maxW="container.xl" overflowY="auto">
+//       <Flex>
+//         <Box flex="1" overflowX="auto">
+//           <SimpleGrid minChildWidth="250px" spacing={4} display="flex" flexDirection="column">
+//             <Box overflowX="auto">
+//               <Contents categoryicon={''} category={"Populer"} />
+//             </Box>
+//             <Box overflowX="auto">
+//               <Contents categoryicon={''} category={"Newest"} />
+//             </Box>
+//             <Box overflowX="auto">
+//               <Contents categoryicon={''} category={"Oldest"} />
+//             </Box>
+//           </SimpleGrid>
+//         </Box>
+//       </Flex>
+//     </Container>
+//       );
+//     };
     
 
-export default SkinsPage;
+// export default SkinsPage;

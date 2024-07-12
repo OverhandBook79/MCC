@@ -1,159 +1,193 @@
 import React, { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
-import { Avatar, Box, Button, Divider, Flex, Image, Input, InputGroup, InputRightElement, Text, useColorModeValue } from '@chakra-ui/react';
+import { Avatar, Box, Button, Divider, Flex, Image, Input, InputGroup, InputLeftAddon, InputRightElement, Spinner, Text, useColorModeValue } from '@chakra-ui/react';
 import { AiOutlineSend } from 'react-icons/ai';
+import { FiShare2, FiThumbsUp, FiThumbsDown } from 'react-icons/fi';
 import Comment from '../../components/Comment/Comment';
 import { firestore, storage, auth } from '../../firebase/firebase';
-import { collection, doc, getDoc, getDocs, addDoc, deleteDoc, serverTimestamp } from 'firebase/firestore';
+import { collection, doc, getDoc, getDocs, addDoc, deleteDoc, updateDoc, serverTimestamp } from 'firebase/firestore';
 import { ref, getDownloadURL } from 'firebase/storage';
 import { useAuthState } from 'react-firebase-hooks/auth';
+import { Link } from 'react-router-dom';
+import useGetUserProfileById from '../../hooks/useGetUserProfileById';
 
 const PostPage = () => {
   const { id } = useParams();
-  const bgColor = useColorModeValue("gray.50", "gray.900");
   const [post, setPost] = useState(null);
+  const [newComment, setNewComment] = useState('');
+  const [likes, setLikes] = useState([]);
+  const [dislikes, setDislikes] = useState([]);
   const [comments, setComments] = useState([]);
-  const [currentUser] = useAuthState(auth);
-  const [newCommentText, setNewCommentText] = useState('');
-  const [replyTo, setReplyTo] = useState(null);
+  const [user] = useAuthState(auth);
+  const { isLoading, userProfile } = useGetUserProfileById(post?.createdBy);
 
   useEffect(() => {
     const fetchPost = async () => {
-      const postDoc = await getDoc(doc(firestore, 'contents', id));
-      if (postDoc.exists()) {
-        setPost(postDoc.data());
+      const docRef = doc(firestore, 'posts', id);
+      const docSnap = await getDoc(docRef);
+      if (docSnap.exists()) {
+        const postData = docSnap.data();
+        setPost(postData);
+        setLikes(postData.likes || []);
+        setDislikes(postData.dislikes || []);
       }
     };
-
+    fetchPost();
+  }, [id]);
+  useEffect(() => {
     const fetchComments = async () => {
-      const commentsSnapshot = await getDocs(collection(firestore, 'contents', id, 'comments'));
-      const commentsList = commentsSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+      const commentsRef = collection(firestore, 'posts', id, 'comments');
+      const commentsSnap = await getDocs(commentsRef);
+      const commentsList = commentsSnap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
       setComments(commentsList);
     };
-
-    fetchPost();
     fetchComments();
   }, [id]);
 
-  if (!post) {
-    return <div>Post not found</div>;
-  }
-
-  const handleDownload = async () => {
-    try {
-      const fileRef = ref(storage, `posts/${id}/${post.file}.zip`);
-      const url = await getDownloadURL(fileRef);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = `${post.title}.zip`;
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-    } catch (error) {
-      console.error('Error downloading file:', error);
-    }
+  const handleCommentChange = (e) => {
+    setNewComment(e.target.value);
   };
 
   const handleCommentSubmit = async () => {
-    if (!newCommentText.trim() || !currentUser) return;
-
-    const newComment = {
-      userId: currentUser.uid,
-      avatar: currentUser.photoURL || '',
-      username: currentUser.displayName || 'Anonymous',
-      text: newCommentText,
-      createdAt: serverTimestamp(),
-      replyTo: replyTo ? { username: replyTo.username, text: replyTo.text } : null,
-    };
-
-    try {
-      const commentDocRef = await addDoc(collection(firestore, 'contents', id, 'comments'), newComment);
-      setComments([...comments, { id: commentDocRef.id, ...newComment }]);
-      setNewCommentText('');
-      setReplyTo(null);
-    } catch (error) {
-      console.error('Error adding comment:', error);
+    if (newComment.trim()) {
+      await addDoc(collection(firestore, 'posts', id, 'comments'), {
+        text: newComment,
+        createdAt: serverTimestamp(),
+        createdBy: user.uid,
+        userName: user.displayName,
+        userAvatar: user.photoURL,
+      });
+      setNewComment('');
+      const commentsSnap = await getDocs(collection(firestore, 'posts', id, 'comments'));
+      setComments(commentsSnap.docs.map(doc => ({ id: doc.id, ...doc.data() })));
     }
   };
 
-  const handleDeleteComment = async (commentId) => {
-    try {
-      await deleteDoc(doc(firestore, 'contents', id, 'comments', commentId));
-      setComments(comments.filter(comment => comment.id !== commentId));
-    } catch (error) {
-      console.error('Error deleting comment:', error);
+  const handleLike = async () => {
+    if (user) {
+      const postRef = doc(firestore, 'posts', id);
+      let updatedLikes = [...likes];
+      let updatedDislikes = [...dislikes];
+
+      if (likes.includes(user.uid)) {
+        updatedLikes = updatedLikes.filter(uid => uid !== user.uid);
+      } else {
+        updatedLikes.push(user.uid);
+        updatedDislikes = updatedDislikes.filter(uid => uid !== user.uid);
+      }
+
+      setLikes(updatedLikes);
+      setDislikes(updatedDislikes);
+
+      await updateDoc(postRef, { likes: updatedLikes, dislikes: updatedDislikes });
     }
   };
 
-  const handleReply = (comment) => {
-    setReplyTo(comment);
+  const handleDislike = async () => {
+    if (user) {
+      const postRef = doc(firestore, 'posts', id);
+      let updatedLikes = [...likes];
+      let updatedDislikes = [...dislikes];
+
+      if (dislikes.includes(user.uid)) {
+        updatedDislikes = updatedDislikes.filter(uid => uid !== user.uid);
+      } else {
+        updatedDislikes.push(user.uid);
+        updatedLikes = updatedLikes.filter(uid => uid !== user.uid);
+      }
+
+      setLikes(updatedLikes);
+      setDislikes(updatedDislikes);
+
+      await updateDoc(postRef, { likes: updatedLikes, dislikes: updatedDislikes });
+    }
   };
 
+  const handleShare = () => {
+    if (navigator.share) {
+      navigator.share({
+        title: post.title,
+        text: post.description,
+        url: window.location.href,
+      });
+    } else {
+      // Fallback sharing
+      const tempInput = document.createElement('input');
+      tempInput.value = window.location.href;
+      document.body.appendChild(tempInput);
+      tempInput.select();
+      document.execCommand('copy');
+      document.body.removeChild(tempInput);
+      alert('Link copied to clipboard');
+    }
+  };
+  if (isLoading) {
+    return <PageLayoutSpinner />;
+  }
+
+  if (!post) {
+    return <>
+      Sorry but we can't found your post
+    </>;
+  }
   return (
-    <Flex direction='column' w='full' px={1} mt={-2} gap={5}>
-      <Flex p={2} gap={2}>
-        <Flex w='full' direction='column' justifyContent={{base:'left' , md: 'center' }} gap={1}>
-          <Text fontWeight='bold' fontSize={20}>{post.title}</Text>
-          <Flex alignItems='center' justifyContent={'left'}>
-            <Image mixW='full' maxW='full' src={post.thumbnail} borderRadius={10} />
+    <Box p={5}>
+      <Flex direction="column" gap={5}>
+        <Image src={post.thumbnail} alt={post.title} maxH="400px" borderRadius="md" />
+        <Text fontSize="3xl">{post.title}</Text>
+        <Link to={`/${userProfile?.username}`}>
+          <Flex gap={1}>
+            Created by: <Text color={'blue.300'}>@{userProfile?.username}</Text>
           </Flex>
-          <Text as='span' fontWeight='bold'> Created By {post.username}</Text>
-          <Text as='span' fontSize={11}>Created at {new Date(post.createdAt.seconds * 1000).toLocaleDateString()}</Text>
-        </Flex>
-      </Flex>
-
-      <Flex direction='column'>
+        </Link>
         <Text>{post.description}</Text>
         <Text>{post.features}</Text>
         <Text>{post.specification}</Text>
-        <Button onClick={handleDownload}>Download Here</Button>
-      </Flex>
-
-      <Divider my={4} />
-
-      <Flex direction='column' gap={4}>
-        <Text fontSize='xl'>Comments</Text>
-        {post.comments.map((comment) => (
-										<Comment key={comment.id} comment={comment} />
-									))}
-
-        {replyTo && (
-          <Box mt={4} p={2} bg={bgColor} borderRadius="md">
-            <Text fontWeight="bold">Replying to {replyTo.username}</Text>
-            <Text fontSize="sm">{replyTo.text}</Text>
-          </Box>
-        )}
-
-        <Flex alignItems='center' w='full'>
-          <Flex alignItems='center' gap={2} w='full'>
-            <Avatar src={currentUser?.photoURL} name={currentUser?.displayName || 'Anonymous'} size={{ md: 'sm', base: 'xs' }} />
-            <InputGroup>
-              <Input
-                fontSize={{ md: '14px', base: '10px' }}
-                size={5}
-                w='full'
-                border='none'
-                type='text'
-                placeholder='Write a comment'
-                value={newCommentText}
-                onChange={(e) => setNewCommentText(e.target.value)}
-              />
-              <InputRightElement>
-                <Box
-                  _hover={{ bg: 'whiteAlpha.300', color: 'blue.600' }}
-                  p={1}
-                  borderRadius={4}
-                  onClick={handleCommentSubmit}
-                >
-                  <AiOutlineSend cursor='pointer' />
-                </Box>
-              </InputRightElement>
-            </InputGroup>
-          </Flex>
+        <Divider />
+        <Flex gap={4} align="center">
+          <Button onClick={handleLike} colorScheme={likes.includes(user?.uid) ? 'blue' : 'gray'} gap={1}>
+            <FiThumbsUp /> {likes.length}
+          </Button>
+          <Button onClick={handleDislike} colorScheme={dislikes.includes(user?.uid) ? 'red' : 'gray'} gap={1}>
+            <FiThumbsDown /> {dislikes.length}
+          </Button>
+          <Button onClick={handleShare} colorScheme="teal" gap={1}>
+            <FiShare2 /> Share
+          </Button>
         </Flex>
+        <Divider />
+        <Box mt={1} >
+          <Text fontSize="xl" fontWeight="bold">Comments</Text>
+          {user && (
+            <Flex align={'center'} gap={1} p={4}>
+              <Avatar size="sm" src={userProfile?.profilePicURL} />
+              <Input
+                placeholder="Add a comment..."
+                value={newComment}
+                onChange={handleCommentChange}
+                w={'full'}
+              />
+              <Button onClick={handleCommentSubmit} disabled={!newComment.trim()}>
+                <AiOutlineSend />
+              </Button>
+            </Flex>
+          )}
+          {comments.map((comment) => (
+            <Comment key={comment.id} comment={comment} postId={id} />
+          ))}
+        </Box>
       </Flex>
-    </Flex>
+    </Box>
   );
 };
 
 export default PostPage;
+
+const PageLayoutSpinner = () => {
+  return (
+    <Flex flexDir='column' h='100vh' alignItems='center' justifyContent='center'>
+      <Spinner size='xl' />
+    </Flex>
+  );
+};
+
