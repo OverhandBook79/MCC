@@ -11,14 +11,3 @@ A website for Minecraft Community to show their creation or download some creati
 
 ## Notes
 - Ntar check lagi
-
-## Local Storage
-Jangan Dicoba
-
-{
-  "username": "Admin 1",
-  "email": "Put your email. your dumb",
-  "password": "nazigreng",
-  "avatar": "",
-  "bio": "This is Admin of Website"
-}
