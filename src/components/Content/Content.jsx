@@ -1,5 +1,5 @@
 import { Box, VStack, useColorModeValue, Flex, Skeleton, SkeletonCircle, Image, Avatar, Text } from '@chakra-ui/react';
-import { Link, Navigate, useParams } from 'react-router-dom';
+import { Link, useNavigate, useParams } from 'react-router-dom';
 import { useEffect, useState } from 'react';
 import { doc, getDoc } from 'firebase/firestore';
 import { firestore } from '../../firebase/firebase';
@@ -9,8 +9,9 @@ import { format } from 'date-fns';
 const Content = ({ post }) => {
   const bgColor = useColorModeValue("gray.50", "gray.900");
   const { isLoading, userProfile } = useGetUserProfileById(post?.createdBy);
+  const navigate = useNavigate();
   const handlePostClick = () => {
-    Navigate(`/post/${postId}`);
+    navigate(`/post/${post.id}`);
   };
 
   const createdAt = post.createdAt?.toDate(); // Convert Firestore Timestamp to Date

@@ -8,7 +8,7 @@ import { firestore, storage } from '../../firebase/firebase';
 import useAuthStore from '../../store/authStore';
 
 const CreationForm = () => {
-	const authUser = useAuthStore((state) => state.user);
+  const authUser = useAuthStore((state) => state.user);
   const navigate = useNavigate();
   const inputRef = useRef();
   const [inputs, setInputs] = useState({

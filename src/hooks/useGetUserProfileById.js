@@ -5,7 +5,7 @@ import { firestore } from "../firebase/firebase";
 
 const useGetUserProfileById = (userId) => {
 	const [isLoading, setIsLoading] = useState(true);
-	const [userProfile, setUserProfile] = useState(null);
+	const [userProfilePost, setUserProfile] = useState(null);
 
 	const showToast = useShowToast();
 
@@ -27,7 +27,7 @@ const useGetUserProfileById = (userId) => {
 		getUserProfile();
 	}, [showToast, setUserProfile, userId]);
 
-	return { isLoading, userProfile, setUserProfile };
+	return { isLoading, userProfilePost, setUserProfile };
 };
 
 export default useGetUserProfileById;

@@ -1,15 +1,17 @@
 import React, { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
-import { Avatar, Box, Button, Divider, Flex, Image, Input, InputGroup, InputLeftAddon, InputRightElement, Spinner, Text, useColorModeValue } from '@chakra-ui/react';
+import { Avatar, Box, Button, Divider, Flex, Image, Input, Spinner, Text, useColorModeValue } from '@chakra-ui/react';
 import { AiOutlineSend } from 'react-icons/ai';
 import { FiShare2, FiThumbsUp, FiThumbsDown } from 'react-icons/fi';
 import Comment from '../../components/Comment/Comment';
 import { firestore, storage, auth } from '../../firebase/firebase';
-import { collection, doc, getDoc, getDocs, addDoc, deleteDoc, updateDoc, serverTimestamp } from 'firebase/firestore';
+import { collection, doc, getDoc, getDocs, addDoc, updateDoc, serverTimestamp } from 'firebase/firestore';
 import { ref, getDownloadURL } from 'firebase/storage';
 import { useAuthState } from 'react-firebase-hooks/auth';
 import { Link } from 'react-router-dom';
 import useGetUserProfileById from '../../hooks/useGetUserProfileById';
+import { DownloadIcon } from '@chakra-ui/icons';
+import useUserProfileStore from '../../store/userProfileStore';
 
 const PostPage = () => {
   const { id } = useParams();
@@ -19,7 +21,8 @@ const PostPage = () => {
   const [dislikes, setDislikes] = useState([]);
   const [comments, setComments] = useState([]);
   const [user] = useAuthState(auth);
-  const { isLoading, userProfile } = useGetUserProfileById(post?.createdBy);
+  const { isLoading, userProfilePost } = useGetUserProfileById(post?.createdBy);
+	const { userProfile } = useUserProfileStore();
 
   useEffect(() => {
     const fetchPost = async () => {
@@ -34,6 +37,7 @@ const PostPage = () => {
     };
     fetchPost();
   }, [id]);
+
   useEffect(() => {
     const fetchComments = async () => {
       const commentsRef = collection(firestore, 'posts', id, 'comments');
@@ -43,6 +47,21 @@ const PostPage = () => {
     };
     fetchComments();
   }, [id]);
+
+  const handleDownload = async () => {
+    try {
+      const fileRef = ref(storage, `posts/${id}/${post.files}`);
+      const url = await getDownloadURL(fileRef);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = post.files;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+    } catch (error) {
+      console.error('Error downloading file:', error);
+    }
+  };
 
   const handleCommentChange = (e) => {
     setNewComment(e.target.value);
@@ -66,10 +85,10 @@ const PostPage = () => {
   const handleLike = async () => {
     if (user) {
       const postRef = doc(firestore, 'posts', id);
-      let updatedLikes = [...likes];
-      let updatedDislikes = [...dislikes];
+      let updatedLikes = Array.isArray(likes) ? [...likes] : [];
+      let updatedDislikes = Array.isArray(dislikes) ? [...dislikes] : [];
 
-      if (likes.includes(user.uid)) {
+      if (updatedLikes.includes(user.uid)) {
         updatedLikes = updatedLikes.filter(uid => uid !== user.uid);
       } else {
         updatedLikes.push(user.uid);
@@ -86,10 +105,10 @@ const PostPage = () => {
   const handleDislike = async () => {
     if (user) {
       const postRef = doc(firestore, 'posts', id);
-      let updatedLikes = [...likes];
-      let updatedDislikes = [...dislikes];
+      let updatedLikes = Array.isArray(likes) ? [...likes] : [];
+      let updatedDislikes = Array.isArray(dislikes) ? [...dislikes] : [];
 
-      if (dislikes.includes(user.uid)) {
+      if (updatedDislikes.includes(user.uid)) {
         updatedDislikes = updatedDislikes.filter(uid => uid !== user.uid);
       } else {
         updatedDislikes.push(user.uid);
@@ -121,23 +140,27 @@ const PostPage = () => {
       alert('Link copied to clipboard');
     }
   };
+
   if (isLoading) {
     return <PageLayoutSpinner />;
   }
 
   if (!post) {
-    return <>
-      Sorry but we can't found your post
-    </>;
+    return (
+      <Box p={5}>
+        <Text fontSize="xl">Sorry, but we can't find your post.</Text>
+      </Box>
+    );
   }
+
   return (
     <Box p={5}>
       <Flex direction="column" gap={5}>
         <Image src={post.thumbnail} alt={post.title} maxH="400px" borderRadius="md" />
         <Text fontSize="3xl">{post.title}</Text>
-        <Link to={`/${userProfile?.username}`}>
+        <Link to={`/${userProfilePost?.username}`}>
           <Flex gap={1}>
-            Created by: <Text color={'blue.300'}>@{userProfile?.username}</Text>
+            Created by: <Text color={'blue.300'}>@{userProfilePost?.username}</Text>
           </Flex>
         </Link>
         <Text>{post.description}</Text>
@@ -154,13 +177,16 @@ const PostPage = () => {
           <Button onClick={handleShare} colorScheme="teal" gap={1}>
             <FiShare2 /> Share
           </Button>
+          <Button onClick={handleDownload} colorScheme="teal" gap={1}>
+            <DownloadIcon /> Download Here...
+          </Button>
         </Flex>
         <Divider />
-        <Box mt={1} >
+        <Box mt={1}>
           <Text fontSize="xl" fontWeight="bold">Comments</Text>
           {user && (
             <Flex align={'center'} gap={1} p={4}>
-              <Avatar size="sm" src={userProfile?.profilePicURL} />
+              <Avatar size="sm" src={userProfile.profilePicURL} />
               <Input
                 placeholder="Add a comment..."
                 value={newComment}
@@ -190,4 +216,3 @@ const PageLayoutSpinner = () => {
     </Flex>
   );
 };
-
