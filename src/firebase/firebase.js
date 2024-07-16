@@ -4,13 +4,14 @@ import { getFirestore } from 'firebase/firestore';
 import { getStorage } from 'firebase/storage';
 
 const firebaseConfig = {
-  apiKey: import.meta.env.VITE_APP_FIREBASE_API_KEY,
-  authDomain: import.meta.env.VITE_APP_FIREBASE_AUTH_DOMAIN,
-  projectId: import.meta.env.VITE_APP_FIREBASE_PROJECT_ID,
-  storageBucket: import.meta.env.VITE_APP_FIREBASE_STORAGE_BUCKET,
-  messagingSenderId: import.meta.env.VITE_APP_FIREBASE_MESSAGING_SENDER_ID,
-  appId: import.meta.env.VITE_APP_FIREBASE_APP_ID,
-  measurementId: import.meta.env.VITE_APP_FIREBASE_MEASUREMENT_ID
+  apiKey: "AIzaSyDrdgGvm91DlzGDYzWDq6tvIxXRRsVoXV4",
+  authDomain: "mine-crafter-community.firebaseapp.com",
+  databaseURL: "https://mine-crafter-community-default-rtdb.firebaseio.com",
+  projectId: "mine-crafter-community",
+  storageBucket: "mine-crafter-community.appspot.com",
+  messagingSenderId: "999518187868",
+  appId: "1:999518187868:web:2e854b5f677cb6886a9199",
+  measurementId: "G-F7TQX0JR61"
 };
 
 const app = initializeApp(firebaseConfig);
