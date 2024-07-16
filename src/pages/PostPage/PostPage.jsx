@@ -12,10 +12,12 @@ import { Link } from 'react-router-dom';
 import useGetUserProfileById from '../../hooks/useGetUserProfileById';
 import { DownloadIcon } from '@chakra-ui/icons';
 import useUserProfileStore from '../../store/userProfileStore';
+import useAuthStore from '../../store/authStore';
 
 const PostPage = () => {
   const { id } = useParams();
   const [post, setPost] = useState(null);
+  const authUser = useAuthStore((state) => state.user);
   const [newComment, setNewComment] = useState('');
   const [likes, setLikes] = useState([]);
   const [dislikes, setDislikes] = useState([]);
@@ -186,7 +188,7 @@ const PostPage = () => {
           <Text fontSize="xl" fontWeight="bold">Comments</Text>
           {user && (
             <Flex align={'center'} gap={1} p={4}>
-              <Avatar size="sm" src={userProfile.profilePicURL} />
+              <Avatar size="sm" src={authUser?.profilePicURL} />
               <Input
                 placeholder="Add a comment..."
                 value={newComment}

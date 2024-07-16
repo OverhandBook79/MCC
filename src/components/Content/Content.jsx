@@ -1,20 +1,14 @@
 import { Box, VStack, useColorModeValue, Flex, Skeleton, SkeletonCircle, Image, Avatar, Text } from '@chakra-ui/react';
-import { Link, useNavigate, useParams } from 'react-router-dom';
-import { useEffect, useState } from 'react';
-import { doc, getDoc } from 'firebase/firestore';
-import { firestore } from '../../firebase/firebase';
+import { Link, useNavigate } from 'react-router-dom';
 import useGetUserProfileById from '../../hooks/useGetUserProfileById';
-import { format } from 'date-fns';
 
 const Content = ({ post }) => {
   const bgColor = useColorModeValue("gray.50", "gray.900");
-  const { isLoading, userProfile } = useGetUserProfileById(post?.createdBy);
+  const { isLoading, userProfilePost } = useGetUserProfileById(post?.createdBy);
   const navigate = useNavigate();
   const handlePostClick = () => {
     navigate(`/post/${post.id}`);
   };
-
-  const createdAt = post.createdAt?.toDate(); // Convert Firestore Timestamp to Date
 
   if (isLoading) {
     return (
@@ -125,12 +119,11 @@ const Content = ({ post }) => {
           />
         </Box>
         <Flex alignItems={'center'} columnGap={4} py={2} justifyContent={'left'} w={'340px'}>
-          <Link to={`/${userProfile?.username}`}>
-            <Avatar size="sm" src={userProfile?.profilePicURL} />
+          <Link to={`/${userProfilePost?.username}`}>
+            <Avatar size="sm" src={userProfilePost?.profilePicURL} />
           </Link>
           <VStack align="start" spacing={2} gap={3}>
             <Text fontSize="lg" fontWeight="bold">{post.title}</Text>
-            {createdAt && <Text fontSize="sm" color="gray.500">{format(createdAt, 'PPpp')}</Text>}
           </VStack>
         </Flex>
       </VStack>
