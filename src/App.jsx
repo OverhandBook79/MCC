@@ -15,7 +15,7 @@ const App = () => {
     <Routes>
       <Route path="/guest" element={authUser ? <PageLayout><Navigate to='/'/></PageLayout> : <AuthPage/>} />
       <Route path="/" element={<PageLayout><HomePage /></PageLayout>} />
-      <Route path="/:username" element={<PageLayout><ProfilePage /></PageLayout>} />
+      <Route path="/profile/:username" element={<PageLayout><ProfilePage /></PageLayout>} />
       <Route path="/uploadcreation" element={!authUser ? <AuthPage /> : <PageLayout><UploadPage /></PageLayout>} />
       <Route path="/post/:id" element={<PageLayout><PostPage /></PageLayout>} />
     </Routes>

@@ -49,20 +49,20 @@ const TopBarDrawer = ({ isOpen, onClose }) => {
               <>
                 <ProfileLink onClose={onClose} />
                 <Button as={RouterLink} to="/" onClick={onClose} w="100%" gap={2}><HiOutlineHome /> Home</Button>
-                <Button as={RouterLink} to="/addons" onClick={onClose} w="100%" gap={2}><IoExtensionPuzzleOutline /> Addons</Button>
-                <Button as={RouterLink} to="/worlds" onClick={onClose} w="100%" gap={2}><BiWorld /> Worlds</Button>
-                <Button as={RouterLink} to="/skins" onClick={onClose} w="100%" gap={2}><AiOutlineSkin /> Skins</Button>
-                <Button as={RouterLink} to="/servers" onClick={onClose} w="100%" gap={2}><TbWorld /> Servers</Button>
+                <Button as={RouterLink} to="/addons" onClick={onClose} w="100%" gap={2}><IoExtensionPuzzleOutline /> under development</Button>
+                <Button as={RouterLink} to="/worlds" onClick={onClose} w="100%" gap={2}><BiWorld /> under development</Button>
+                <Button as={RouterLink} to="/skins" onClick={onClose} w="100%" gap={2}><AiOutlineSkin /> under development</Button>
+                <Button as={RouterLink} to="/servers" onClick={onClose} w="100%" gap={2}><TbWorld /> under development</Button>
                 <Button w="100%" gap={2} onClick={handleLogout} isLoading={isLoggingOut}><CiLogout /> Logout</Button>
               </>
             ) : (
               <>
                 <Button as={RouterLink} to="/guest" onClick={onClose} w="100%" gap={2}>Register</Button>
                 <Button as={RouterLink} to="/" onClick={onClose} w="100%" gap={2}><HiOutlineHome /> Home</Button>
-                <Button as={RouterLink} to="/addons" onClick={onClose} w="100%" gap={2}><IoExtensionPuzzleOutline /> Addons</Button>
-                <Button as={RouterLink} to="/worlds" onClick={onClose} w="100%" gap={2}><BiWorld /> Worlds</Button>
-                <Button as={RouterLink} to="/skins" onClick={onClose} w="100%" gap={2}><AiOutlineSkin /> Skins</Button>
-                <Button as={RouterLink} to="/servers" onClick={onClose} w="100%" gap={2}><TbWorld /> Servers</Button>
+                <Button as={RouterLink} to="/addons" onClick={onClose} w="100%" gap={2}><IoExtensionPuzzleOutline /> under development</Button>
+                <Button as={RouterLink} to="/worlds" onClick={onClose} w="100%" gap={2}><BiWorld /> under development</Button>
+                <Button as={RouterLink} to="/skins" onClick={onClose} w="100%" gap={2}><AiOutlineSkin /> under development</Button>
+                <Button as={RouterLink} to="/servers" onClick={onClose} w="100%" gap={2}><TbWorld /> under development</Button>
               </>
             )}
             <Flex gap={2} justifyContent="center">

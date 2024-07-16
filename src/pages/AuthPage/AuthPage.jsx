@@ -6,7 +6,8 @@ import SignUp from '../../components/ProfileModal/SignUp'
 const AuthPage = () => {
   return (
     <>
-      <Flex alignItems={'center'} justifyContent={'center'} w={300}>
+      <Flex alignItems={'center'} justifyContent={'center'} w={'full'} h='full'>
+        <Box w={'300px'}>
       <Tabs size='md' variant='enclosed' w={300}>
         <TabList w={300}>
           <Tab>Sign Up</Tab>
@@ -21,6 +22,7 @@ const AuthPage = () => {
           </TabPanel>
         </TabPanels>
       </Tabs>
+      </Box>
       </Flex>
     </>
   )

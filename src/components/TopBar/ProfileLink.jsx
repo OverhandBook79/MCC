@@ -6,7 +6,7 @@ const ProfileLink = ({ onClose }) => {
   const authUser = useAuthStore((state) => state.user);
 
   return (
-    <Button as={RouterLink} to={`/${authUser?.username}`} w={"100%"} gap={2} onClick={onClose}>
+    <Button as={RouterLink} to={`/profile/${authUser?.username}`} w={"100%"} gap={2} onClick={onClose}>
       <Flex alignItems="center" gap={2}>
         <Avatar size={"sm"} src={authUser?.profilePicURL || ""} />
         <Text>{authUser?.username}</Text>
