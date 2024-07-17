@@ -160,7 +160,7 @@ const PostPage = () => {
       <Flex direction="column" gap={5}>
         <Image src={post.thumbnail} alt={post.title} maxH="400px" borderRadius="md" />
         <Text fontSize="3xl">{post.title}</Text>
-        <Link to={`/${userProfilePost?.username}`}>
+        <Link to={`/profile/${userProfilePost?.username}`}>
           <Flex gap={1}>
             Created by: <Text color={'blue.300'}>@{userProfilePost?.username}</Text>
           </Flex>
