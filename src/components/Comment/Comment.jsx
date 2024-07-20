@@ -5,10 +5,12 @@ import { auth, firestore } from '../../firebase/firebase';
 import { deleteDoc, doc } from 'firebase/firestore';
 import { FiTrash2 } from 'react-icons/fi';
 import useGetUserProfileById from '../../hooks/useGetUserProfileById';
+import { timeAgo } from '../../utils/timeAgo';
 
 const Comment = ({ comment, postId }) => {
   const [user] = useAuthState(auth);
-  const { isLoading, userProfile } = useGetUserProfileById(comment?.createdBy);
+  const [comment, setPost] = useState(null);
+  const { isLoading, userProfilePost } = useGetUserProfileById(comment?.createdBy);
 
   const handleDeleteComment = async () => {
     if (comment.createdBy === user.uid) {
@@ -18,14 +20,15 @@ const Comment = ({ comment, postId }) => {
 
   return (
     <Flex p={4} borderRadius='md' boxShadow='md'>
-      <Avatar size="sm" src={userProfile?.profilePicURL} />
+      <Avatar size="sm" src={userProfilePost?.userAvatar} />
       <Box>
         <Flex align='center' mb={2}>
           <Text fontWeight='bold' mr={2}>
-            {comment.userName}
+            {userProfilePost?.userName}
           </Text>
           <Text color='gray.500' fontSize='sm'>
-            {new Date(comment.createdAt?.toDate()).toLocaleString()}
+            {timeAgo(comment.createdAt?.toDate()).toLocaleString()}
+            
           </Text>
         </Flex>
         <Text mb={2}>{comment.text}</Text>

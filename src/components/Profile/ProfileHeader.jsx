@@ -3,6 +3,7 @@ import useUserProfileStore from "../../store/userProfileStore";
 import useAuthStore from "../../store/authStore";
 import EditProfile from "./EditProfile";
 import useFollowUser from "../../hooks/useFollowUser";
+import { Link } from "react-router-dom";
 
 const ProfileHeader = () => {
 	const { userProfile } = useUserProfileStore();
@@ -84,6 +85,9 @@ const ProfileHeader = () => {
 				<Text fontSize={"sm"}>{userProfile.bio}</Text>
 			</VStack>
 			{isOpen && <EditProfile isOpen={isOpen} onClose={onClose} />}
+			<Link to={'/uploadcreation'}>
+				Make a Post
+			</Link>
 		</Flex>
 	);
 };

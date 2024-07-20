@@ -72,16 +72,23 @@ const CreationForm = () => {
     setInputs({ ...inputs, files: validFiles });
   };
 
+  const uploadFile = async (postId, file) => {
+    const fileRef = ref(storage, `posts/${postId}/${file.name}`);
+    await uploadBytes(fileRef, file);
+    const filePath = `posts/${postId}/${file.name}`; // Relative path
+    const fileUrl = await getDownloadURL(fileRef);
+    return { filePath, fileUrl };
+  };  
+
   const handleUpload = async () => {
     if (!authUser) {
-      setError('You need to be logged in to upload a post.');
+      setError('You need to be logged in to make a post.');
       return;
     }
-
+  
     setError('');
-
+  
     try {
-      // Create a new document in Firestore and get its ID
       const newContent = {
         title: inputs.title,
         category: inputs.category,
@@ -96,39 +103,36 @@ const CreationForm = () => {
         createdAt: serverTimestamp(),
         createdBy: authUser.uid,
       };
-
+  
       const docRef = await addDoc(collection(firestore, 'posts'), newContent);
       const postId = docRef.id;
-
-      // Upload thumbnail
+  
       let thumbnailURL = '';
       if (inputs.thumbnailFile) {
         const thumbnailRef = ref(storage, `posts/${postId}/${postId}.thumbnail`);
         await uploadBytes(thumbnailRef, inputs.thumbnailFile);
         thumbnailURL = await getDownloadURL(thumbnailRef);
       }
-
-      // Upload files
-      const fileUrls = [];
+  
+      const filePaths = [];
       for (const file of inputs.files) {
-        const fileRef = ref(storage, `posts/${postId}/${postId}.${file.name.split('.').pop()}`);
+        const fileRef = ref(storage, `posts/${postId}/${file.name}`);
         await uploadBytes(fileRef, file);
-        const fileUrl = await getDownloadURL(fileRef);
-        fileUrls.push(fileUrl);
+        filePaths.push(`posts/${postId}/${file.name}`);
       }
-
-      // Update the document with the file URLs and thumbnail URL
+  
       await updateDoc(doc(firestore, 'posts', postId), { 
         thumbnail: thumbnailURL, 
-        files: fileUrls 
+        files: filePaths 
       });
-
+  
       navigate(`/post/${postId}`);
     } catch (error) {
       console.error('Error uploading post:', error);
       setError('Failed to upload post. Please try again.');
     }
   };
+  
 
   const selectCategory = (category) => {
     setInputs({ ...inputs, category });
