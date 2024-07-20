@@ -1,6 +1,7 @@
 import { Box, VStack, useColorModeValue, Flex, Skeleton, SkeletonCircle, Image, Avatar, Text } from '@chakra-ui/react';
 import { Link, useNavigate } from 'react-router-dom';
 import useGetUserProfileById from '../../hooks/useGetUserProfileById';
+import { timeAgo } from '../../utils/timeAgo';
 
 const Content = ({ post }) => {
   const bgColor = useColorModeValue("gray.50", "gray.900");
@@ -82,6 +83,8 @@ const Content = ({ post }) => {
     );
   }
 
+  const createdAt = post?.createdAt?.seconds ? new Date(post.createdAt.seconds * 1000) : new Date(post.createdAt);
+
   return (
     <Box
       maxWidth="360px"
@@ -120,10 +123,11 @@ const Content = ({ post }) => {
         </Box>
         <Flex alignItems={'center'} columnGap={4} py={2} justifyContent={'left'} w={'340px'}>
           <Link to={`/${userProfilePost?.username}`}>
-            <Avatar size="sm" src={userProfilePost?.profilePicURL} />
+            <Avatar size="md" src={userProfilePost?.profilePicURL} />
           </Link>
-          <VStack align="start" spacing={2} gap={3}>
-            <Text fontSize="lg" fontWeight="bold">{post.title}</Text>
+          <VStack align="start" gap={-1} >
+            <Text fontSize="xl" fontWeight="bold">{post.title}</Text>
+            <Text fontSize="md">{timeAgo(createdAt.getTime())}</Text>
           </VStack>
         </Flex>
       </VStack>
