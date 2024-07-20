@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { useParams } from 'react-router-dom';
-import { Avatar, Box, Button, Divider, Flex, Image, Input, Spinner, Text, useColorModeValue } from '@chakra-ui/react';
+import { useParams, Link } from 'react-router-dom';
+import { Avatar, Box, Button, Divider, Flex, Image, Input, Spinner, Text } from '@chakra-ui/react';
 import { AiOutlineSend } from 'react-icons/ai';
 import { FiShare2, FiThumbsUp, FiThumbsDown } from 'react-icons/fi';
 import Comment from '../../components/Comment/Comment';
@@ -8,7 +8,6 @@ import { firestore, storage, auth } from '../../firebase/firebase';
 import { collection, doc, getDoc, getDocs, addDoc, updateDoc, serverTimestamp } from 'firebase/firestore';
 import { ref, getDownloadURL } from 'firebase/storage';
 import { useAuthState } from 'react-firebase-hooks/auth';
-import { Link } from 'react-router-dom';
 import useGetUserProfileById from '../../hooks/useGetUserProfileById';
 import { DownloadIcon } from '@chakra-ui/icons';
 import useUserProfileStore from '../../store/userProfileStore';
@@ -24,7 +23,7 @@ const PostPage = () => {
   const [comments, setComments] = useState([]);
   const [user] = useAuthState(auth);
   const { isLoading, userProfilePost } = useGetUserProfileById(post?.createdBy);
-	const { userProfile } = useUserProfileStore();
+  const { userProfile } = useUserProfileStore();
 
   useEffect(() => {
     const fetchPost = async () => {
@@ -52,14 +51,20 @@ const PostPage = () => {
 
   const handleDownload = async () => {
     try {
-      const fileRef = ref(storage, `posts/${id}/${post.files}`);
-      const url = await getDownloadURL(fileRef);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = post.files;
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
+      if (!post?.files || post.files.length === 0) {
+        console.error('No files to download.');
+        return;
+      }
+      for (const filePath of post.files) {
+        const fileRef = ref(storage, filePath);
+        const url = await getDownloadURL(fileRef);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = filePath.split('/').pop();
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+      }
     } catch (error) {
       console.error('Error downloading file:', error);
     }
@@ -74,9 +79,9 @@ const PostPage = () => {
       await addDoc(collection(firestore, 'posts', id, 'comments'), {
         text: newComment,
         createdAt: serverTimestamp(),
-        createdBy: user.uid,
-        userName: user.displayName,
-        userAvatar: user.photoURL,
+        createdBy: user?.uid,
+        userName: user?.displayName,
+        userAvatar: user?.photoURL,
       });
       setNewComment('');
       const commentsSnap = await getDocs(collection(firestore, 'posts', id, 'comments'));
@@ -128,7 +133,6 @@ const PostPage = () => {
     if (navigator.share) {
       navigator.share({
         title: post.title,
-        text: post.description,
         url: window.location.href,
       });
     } else {
@@ -158,29 +162,44 @@ const PostPage = () => {
   return (
     <Box p={5}>
       <Flex direction="column" gap={5}>
-        <Image src={post.thumbnail} alt={post.title} maxH="400px" borderRadius="md" />
+        <Image src={post.thumbnail} alt={post.title} maxH="400px" maxW="711px" borderRadius="md" />
         <Text fontSize="3xl">{post.title}</Text>
         <Link to={`/profile/${userProfilePost?.username}`}>
           <Flex gap={1}>
             Created by: <Text color={'blue.300'}>@{userProfilePost?.username}</Text>
           </Flex>
         </Link>
-        <Text>{post.description}</Text>
-        <Text>{post.features}</Text>
-        <Text>{post.specification}</Text>
+        <p>
+          {post.description}
+        </p>
+        <p>
+          {post.features}
+        </p>
+        <p>
+          {post.specification}
+        </p>
         <Divider />
         <Flex gap={4} align="center">
-          <Button onClick={handleLike} colorScheme={likes.includes(user?.uid) ? 'blue' : 'gray'} gap={1}>
-            <FiThumbsUp /> {likes.length}
+          {user && (
+            <>
+              <Button onClick={handleLike} colorScheme={likes.includes(user?.uid) ? 'blue' : 'gray'} gap={0.5}>
+                <FiThumbsUp /> {likes.length}
+              </Button>
+              <Button onClick={handleDislike} colorScheme={dislikes.includes(user?.uid) ? 'red' : 'gray'} gap={0.5}>
+                <FiThumbsDown /> {dislikes.length}
+              </Button>
+            </>
+          )}
+          {!user && (
+            <Button colorScheme="teal" gap={0.5}>
+              Register
+            </Button>
+          )}
+          <Button onClick={handleShare} colorScheme="teal" gap={0.5}>
+            <FiShare2 /> <Flex display={{base:'none', md:'block'}}>Share</Flex>
           </Button>
-          <Button onClick={handleDislike} colorScheme={dislikes.includes(user?.uid) ? 'red' : 'gray'} gap={1}>
-            <FiThumbsDown /> {dislikes.length}
-          </Button>
-          <Button onClick={handleShare} colorScheme="teal" gap={1}>
-            <FiShare2 /> Share
-          </Button>
-          <Button onClick={handleDownload} colorScheme="teal" gap={1}>
-            <DownloadIcon /> Download Here...
+          <Button onClick={handleDownload} colorScheme="teal" gap={0.5}>
+            <DownloadIcon /> <Flex display={{base:'none', md:'block'}}>Download here...</Flex>
           </Button>
         </Flex>
         <Divider />
